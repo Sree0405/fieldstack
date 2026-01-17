@@ -1,0 +1,269 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
+All colors MUST be HSL.
+*/
+@layer base {
+  :root {
+    /* ========= Core Surface ========= */
+    --background: 225 25% 96%;
+    --foreground: 225 20% 12%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 225 20% 12%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 225 20% 12%;
+
+    /* ========= Brand / Primary ========= */
+    /* Indigo-violet (stronger, premium) */
+    --primary: 245 60% 42%;
+    --primary-hover: 245 60% 36%;
+    --primary-foreground: 0 0% 100%;
+
+    /* ========= Secondary ========= */
+    --secondary: 225 18% 92%;
+    --secondary-foreground: 225 15% 30%;
+
+    /* ========= Muted ========= */
+    --muted: 225 18% 94%;
+    --muted-foreground: 225 12% 48%;
+
+    /* ========= Accent ========= */
+    /* Cyan-teal tech accent */
+    --accent: 190 80% 44%;
+    --accent-hover: 190 80% 38%;
+    --accent-foreground: 0 0% 100%;
+
+    /* ========= Status ========= */
+    --destructive: 0 78% 55%;
+    --destructive-foreground: 0 0% 100%;
+
+    --success: 145 65% 42%;
+    --success-foreground: 0 0% 100%;
+
+    --warning: 38 92% 52%;
+    --warning-foreground: 0 0% 100%;
+
+    /* ========= Borders / Inputs ========= */
+    --border: 225 15% 86%;
+    --input: 225 15% 86%;
+    --ring: 245 60% 42%;
+
+    --radius: 0.6rem;
+
+    /* ========= Sidebar ========= */
+    --sidebar-background: 245 60% 42%;
+    --sidebar-foreground: 225 30% 96%;
+
+    --sidebar-primary: 190 80% 44%;
+    --sidebar-primary-foreground: 0 0% 100%;
+
+    --sidebar-accent: 245 60% 36%;
+    --sidebar-accent-foreground: 225 30% 96%;
+
+    --sidebar-border: 245 60% 36%;
+    --sidebar-ring: 190 80% 44%;
+
+    /* ========= Gradients ========= */
+    --gradient-primary: linear-gradient(
+      135deg,
+      hsl(245 60% 42%),
+      hsl(255 65% 52%)
+    );
+
+    --gradient-accent: linear-gradient(
+      135deg,
+      hsl(190 80% 44%),
+      hsl(200 85% 54%)
+    );
+
+    --gradient-subtle: linear-gradient(
+      180deg,
+      hsl(225 25% 99%),
+      hsl(225 25% 96%)
+    );
+
+    /* ========= Shadows ========= */
+    --shadow-sm: 0 1px 2px hsl(225 20% 12% / 0.05);
+    --shadow-md: 0 6px 12px hsl(225 20% 12% / 0.08);
+    --shadow-lg: 0 20px 40px hsl(225 20% 12% / 0.12);
+
+    /* ========= Motion ========= */
+    --transition-smooth: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  /* ================= DARK MODE ================= */
+  .dark {
+    /* ========= Core Surfaces ========= */
+    --background: 265 45% 4%;       /* rgb(6,0,16) */
+    --foreground: 260 30% 92%;
+
+    --card: 265 40% 7%;
+    --card-foreground: 260 30% 92%;
+
+    --popover: 265 40% 7%;
+    --popover-foreground: 260 30% 92%;
+
+    /* ========= Brand (Premium Purple) ========= */
+    --primary: 260 85% 65%;
+    --primary-hover: 260 85% 58%;
+    --primary-foreground: 0 0% 100%;
+
+    /* ========= Secondary Surfaces ========= */
+    --secondary: 265 35% 10%;
+    --secondary-foreground: 260 25% 82%;
+
+    /* ========= Muted ========= */
+    --muted: 265 30% 9%;
+    --muted-foreground: 260 20% 60%;
+
+    /* ========= Accent (Tech Purple-Blue) ========= */
+    --accent: 255 90% 70%;
+    --accent-hover: 255 90% 62%;
+    --accent-foreground: 0 0% 100%;
+
+    /* ========= Status ========= */
+    --destructive: 0 75% 60%;
+    --success: 145 65% 48%;
+    --warning: 38 90% 56%;
+
+    /* ========= Borders / Rings ========= */
+    --border: 265 30% 14%;
+    --input: 265 30% 14%;
+    --ring: 260 85% 65%;
+
+    --radius: 0.75rem;
+
+    /* ========= Sidebar ========= */
+    --sidebar-background: 265 45% 4%;
+    --sidebar-foreground: 260 30% 88%;
+
+    --sidebar-accent: 265 35% 10%;
+    --sidebar-border: 265 30% 14%;
+
+    /* ========= Shadows ========= */
+    --shadow-sm: 0 4px 12px hsl(265 80% 4% / 0.4);
+    --shadow-md: 0 12px 32px hsl(265 80% 4% / 0.5);
+    --shadow-lg: 0 30px 80px hsl(265 80% 4% / 0.6);
+
+    /* ========= Motion ========= */
+    --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+}
+
+
+.bg-background {
+  background-color: rgb(6, 0, 16);
+  color: white;
+}
+/* Hide scrollbar but keep scrolling */
+.no-scrollbar {
+  -ms-overflow-style: none;   /* IE & Edge */
+  scrollbar-width: none;      /* Firefox */
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;              /* Chrome, Safari */
+}
+
+/* =========================================================
+   ENTERPRISE GLASS SYSTEM
+   Core background already exists: rgb(6, 0, 16)
+   ========================================================= */
+
+.card-glass,
+.bg-card {
+  position: relative;
+  overflow: hidden;
+
+  /* NO background-color — pure glass */
+  background: transparent;
+
+  /* Glass blur + depth */
+  backdrop-filter: blur(20px) saturate(140%);
+  -webkit-backdrop-filter: blur(20px) saturate(140%);
+
+  /* Edge definition */
+  border: 1px solid rgba(255, 255, 255, 0.10);
+  border-radius: var(--radius);
+
+  /* Depth & polish */
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.10),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.35),
+    0 10px 30px rgba(0, 0, 0, 0.55),
+    var(--shadow-md);
+
+  transition: var(--transition-smooth);
+}
+
+/* ---------------------------------------------------------
+   Glass light diffusion (subtle tint, no bg override)
+--------------------------------------------------------- */
+.card-glass::before,
+.bg-card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+
+  background:
+    linear-gradient(
+      180deg,
+      rgba(255, 255, 255, 0.06),
+      rgba(255, 255, 255, 0.015)
+    );
+
+  pointer-events: none;
+}
+
+/* ---------------------------------------------------------
+   Glass grain (premium, very subtle)
+--------------------------------------------------------- */
+.card-glass::after,
+.bg-card::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)' opacity='0.035'/%3E%3C/svg%3E");
+  pointer-events: none;
+}
+
+/* ---------------------------------------------------------
+   Hover elevation (enterprise, restrained)
+--------------------------------------------------------- */
+.card-glass:hover,
+.bg-card:hover {
+  transform: translateY(-2px);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.14),
+    0 18px 50px rgba(0, 0, 0, 0.65),
+    var(--shadow-lg);
+}
+
+/* ---------------------------------------------------------
+   Accent variant (for important cards only)
+--------------------------------------------------------- */
+.card-glass--accent {
+  box-shadow:
+    inset 0 0 0 1px rgba(124, 92, 255, 0.28),
+    inset 0 0 22px rgba(124, 92, 255, 0.12),
+    0 20px 60px rgba(0, 0, 0, 0.6);
+}
+
+/* ---------------------------------------------------------
+   Motion safety
+--------------------------------------------------------- */
+@media (prefers-reduced-motion: reduce) {
+  .card-glass,
+  .bg-card {
+    transition: none;
+    transform: none;
+  }
+}
+

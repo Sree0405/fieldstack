@@ -1,0 +1,56 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:16-alpine
+    container_name: novacms-postgres
+    environment:
+      POSTGRES_USER: novacms_user
+      POSTGRES_PASSWORD: strongpassword
+      POSTGRES_DB: novacms
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U novacms_user -d novacms"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - novacms-network
+
+  # NovaCMS Backend
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: novacms-backend
+    environment:
+      DATABASE_URL: postgresql://novacms_user:strongpassword@postgres:5432/novacms?schema=public
+      PORT: 4000
+      NODE_ENV: development
+      JWT_SECRET: your-jwt-secret-change-in-production
+      ACCESS_TOKEN_EXPIRES_IN: 15m
+      REFRESH_TOKEN_EXPIRES_IN: 7d
+      FRONTEND_URL: http://localhost:3000
+    ports:
+      - "4000:4000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    volumes:
+      - ./server/src:/app/src
+      - ./uploads:/app/uploads
+    command: npm run start:dev
+    networks:
+      - novacms-network
+
+volumes:
+  postgres_data:
+    driver: local
+
+networks:
+  novacms-network:
+    driver: bridge

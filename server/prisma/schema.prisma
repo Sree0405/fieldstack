@@ -1,0 +1,296 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ============================================================
+// METADATA SYSTEM - Core CMS Tables
+// ============================================================
+
+model Collection {
+  id        String   @id @default(uuid())
+  name      String   @unique
+  displayName String
+  description String?
+  tableName String   @unique
+  status    CollectionStatus @default(ACTIVE)
+  
+  fields    Field[]
+  relations Relation[]
+  permissions Permission[]
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("collections")
+}
+
+model Field {
+  id          String   @id @default(uuid())
+  collectionId String
+  collection  Collection @relation(fields: [collectionId], references: [id], onDelete: Cascade)
+  
+  name        String
+  dbColumn    String
+  type        FieldType
+  required    Boolean   @default(false)
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  @@unique([collectionId, name])
+  @@unique([collectionId, dbColumn])
+  @@map("fields")
+}
+
+model Relation {
+  id                  String   @id @default(uuid())
+  collectionId        String
+  collection          Collection @relation(fields: [collectionId], references: [id], onDelete: Cascade)
+  relatedCollectionId String
+  
+  relationType RelationType
+  onDelete     String       @default("cascade")
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("relations")
+}
+
+// ============================================================
+// USER & AUTHENTICATION
+// ============================================================
+
+model User {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  password  String   // bcrypt hashed
+  
+  profile   Profile?
+  roles     UserRole[]
+  notifications Notification[]
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("users")
+}
+
+model Profile {
+  id          String   @id
+  user        User     @relation(fields: [id], references: [id], onDelete: Cascade)
+  
+  email       String
+  displayName String?
+  avatarUrl   String?
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("profiles")
+}
+
+model Role {
+  id          String   @id @default(uuid())
+  name        String   @unique
+  displayName String
+  description String?
+  
+  users       UserRole[]
+  permissions Permission[]
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("roles")
+}
+
+model UserRole {
+  id     String @id @default(uuid())
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  roleId String
+  role   Role   @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  
+  createdAt DateTime @default(now())
+  
+  @@unique([userId, roleId])
+  @@map("user_roles")
+}
+
+// ============================================================
+// PERMISSIONS & ROLES
+// ============================================================
+
+model Permission {
+  id              String   @id @default(uuid())
+  roleId          String
+  role            Role     @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  
+  collectionId    String
+  collection      Collection @relation(fields: [collectionId], references: [id], onDelete: Cascade)
+  
+  action          PermissionAction
+  condition       Json?
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  @@unique([roleId, collectionId, action])
+  @@map("permissions")
+}
+
+// ============================================================
+// AUDIT & NOTIFICATIONS
+// ============================================================
+
+model AuditLog {
+  id          String   @id @default(uuid())
+  collectionId String
+  recordId    String
+  
+  action      String   // CREATE, UPDATE, DELETE, etc
+  userId      String?
+  oldData     Json?
+  newData     Json?
+  
+  changes     String?  // Human-readable changes summary
+  ip          String?
+  userAgent   String?
+  
+  createdAt DateTime @default(now())
+
+  @@index([collectionId, recordId])
+  @@index([userId])
+  @@map("audit_logs")
+}
+
+model Notification {
+  id        String   @id @default(uuid())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    String
+  
+  type      NotificationType
+  title     String
+  message   String
+  data      Json?
+  
+  read      Boolean   @default(false)
+  
+  createdAt DateTime @default(now())
+  readAt    DateTime?
+
+  @@index([userId, read])
+  @@map("notifications")
+}
+
+// ============================================================
+// ENUMS
+// ============================================================
+
+enum NotificationType {
+  INFO
+  SUCCESS
+  WARNING
+  ERROR
+  COLLECTION_CREATED
+  COLLECTION_UPDATED
+  RECORD_CREATED
+  RECORD_UPDATED
+  RECORD_DELETED
+  PERMISSION_CHANGED
+
+  @@map("notification_type")
+}
+
+enum CollectionStatus {
+  ACTIVE
+  ARCHIVED
+
+  @@map("collection_status")
+}
+
+enum FieldType {
+  // Basic types
+  STRING
+  TEXT
+  INTEGER
+  DECIMAL
+  FLOAT
+  BOOLEAN
+  
+  // Date/Time types
+  DATE
+  TIME
+  DATETIME
+  TIMESTAMP
+  
+  // Data types
+  EMAIL
+  URL
+  PHONE
+  UUID
+  JSON
+  JSONB
+  
+  // Media types
+  IMAGE
+  VIDEO
+  FILE
+  
+  // Selection types
+  ENUM
+  RELATION
+  TOGGLE
+  SELECT
+  MULTISELECT
+  CHECKBOX
+  RADIO
+  
+  // Relationship types
+  BELONGS_TO
+  HAS_ONE
+  HAS_MANY
+  MANY_TO_MANY
+  
+  // Advanced types
+  SLUG
+  MARKDOWN
+  RICH_TEXT
+  COLOR
+  CURRENCY
+  PERCENTAGE
+  RATING
+  
+  // System types (usually read-only)
+  AUTO_INCREMENT
+  SERIAL
+
+  @@map("field_type")
+}
+
+enum PermissionAction {
+  READ
+  CREATE
+  UPDATE
+  DELETE
+
+  @@map("permission_action")
+}
+
+enum RelationType {
+  ONE_TO_ONE
+  ONE_TO_MANY
+  MANY_TO_MANY
+
+  @@map("relation_type")
+}
