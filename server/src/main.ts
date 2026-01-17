@@ -3,19 +3,22 @@ import { NestFactory } from '@nestjs/core';
 import { ValidationPipe } from '@nestjs/common';
 import { AppModule } from './app.module';
 import { BootstrapService } from './bootstrap/bootstrap.service';
+import type { Request, Response } from 'express';
 
 import * as express from 'express';
-import type { Request, Response } from 'express';
 import { join } from 'path';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
-app.setGlobalPrefix('api');
+  // ✅ API namespace
+  app.setGlobalPrefix('api');
 
-  const isProduction = process.env.NODE_ENV === 'production';
+  // ✅ Correct env detection
+  const isDevelopment = process.env.NODE_ENV !== 'production';
 
-  if (!isProduction) {
+  // ✅ CORS only needed in dev (same-domain in prod)
+  if (isDevelopment) {
     app.enableCors({
       origin: [
         'http://localhost:3000',
@@ -26,6 +29,7 @@ app.setGlobalPrefix('api');
     });
   }
 
+  // ✅ Global validation
   app.useGlobalPipes(
     new ValidationPipe({
       transform: true,
@@ -33,23 +37,32 @@ app.setGlobalPrefix('api');
     }),
   );
 
+  // ✅ Bootstrap DB / roles / admin
   const bootstrapService = app.get(BootstrapService);
   await bootstrapService.init();
-if (isProduction) {
-  const clientPath = join(__dirname, '..', '..', 'dist');
 
-  const server = app.getHttpAdapter().getInstance() as express.Express;
+  // ✅ Serve dashboard in production
+  if (!isDevelopment) {
+    const clientPath = join(__dirname, '..', '..', 'dist');
+    const server = app.getHttpAdapter().getInstance() as any;
 
-  server.use(express.static(clientPath));
+    // Static assets
+    server.use('/assets', express.static(join(clientPath, 'assets')));
 
-  server.get('*', (_req: Request, res: Response) => {
-    res.sendFile(join(clientPath, 'index.html'));
-  });
-}
+    // SPA fallback (exclude /api)
+server.get(/^\/(?!api).*/, (_req: Request, res: Response) => {
+  res.sendFile(join(clientPath, 'index.html'));
+});
 
+  }
 
   const port = process.env.PORT || 4000;
   await app.listen(port, '0.0.0.0');
+
+  console.log(`🚀 Fieldstack running on port ${port}`);
 }
 
-bootstrap();
+bootstrap().catch((err) => {
+  console.error('❌ Bootstrap failed', err);
+  process.exit(1);
+});

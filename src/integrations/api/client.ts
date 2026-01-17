@@ -278,7 +278,7 @@ class ApiClient {
     limit: string = '25'
   ): Promise<ApiResponse<any>> {
     return this.request(
-      `/api/${collection}?page=${page}&limit=${limit}`,
+      `/${collection}?page=${page}&limit=${limit}`,
       {
         method: 'GET',
       }
@@ -286,7 +286,7 @@ class ApiClient {
   }
 
   async createCrudItem(collection: string, data: any): Promise<ApiResponse<any>> {
-    return this.request(`/api/${collection}`, {
+    return this.request(`/${collection}`, {
       method: 'POST',
       body: JSON.stringify(data),
     });
@@ -297,14 +297,14 @@ class ApiClient {
     id: string,
     data: any
   ): Promise<ApiResponse<any>> {
-    return this.request(`/api/${collection}/${id}`, {
+    return this.request(`/${collection}/${id}`, {
       method: 'PATCH',
       body: JSON.stringify(data),
     });
   }
 
   async deleteCrudItem(collection: string, id: string): Promise<ApiResponse<any>> {
-    return this.request(`/api/${collection}/${id}`, {
+    return this.request(`/${collection}/${id}`, {
       method: 'DELETE',
     });
   }
