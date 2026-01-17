@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 
 ## Project info
 
@@ -51,4 +52,6 @@ This project is built with:
 - React
 - shadcn-ui
 - Tailwind CSS
+=======
+>>>>>>> 3c65bfafa20c80e9d7bf457fc4d404f60c505b70
 
