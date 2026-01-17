@@ -14,7 +14,7 @@ export default function Auth() {
   const [error, setError] = useState('');
 
   // Login state
-  const [email, setEmail] = useState('admin@novacms.local');
+  const [email, setEmail] = useState('admin@fieldstack.local');
   const [password, setPassword] = useState('');
 
   // Register state
@@ -86,7 +86,7 @@ export default function Auth() {
       <div className="h-12 w-12 rounded-xl bg-purple-600/30 border border-purple-500/40 flex items-center justify-center text-2xl shadow-lg shadow-purple-500/30">
         🚀
       </div>
-      <h1 className="text-3xl font-semibold tracking-tight">NovaCMS</h1>
+      <h1 className="text-3xl font-semibold tracking-tight">fieldstack</h1>
     </div>
 
     <p className="text-lg text-gray-300 leading-relaxed animate-fade-up delay-100">

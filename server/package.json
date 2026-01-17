@@ -1,8 +1,8 @@
 {
-  "name": "novacms-server",
+  "name": "fieldstack-server",
   "version": "1.0.0",
-  "description": "NovaCMS headless CMS backend - NestJS + Prisma + PostgreSQL",
-  "author": "NovaCMS",
+  "description": "fieldstack headless CMS backend - NestJS + Prisma + PostgreSQL",
+  "author": "fieldstack",
   "private": true,
   "license": "MIT",
   "scripts": {

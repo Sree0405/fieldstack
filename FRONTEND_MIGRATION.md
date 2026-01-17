@@ -51,8 +51,8 @@ Completely rewritten to use NestJS backend:
 
 **Default Test Credentials:**
 ```
-Email: admin@novacms.local
-Password: NovaCMS@Admin123!
+Email: admin@fieldstack.local
+Password: fieldstack@Admin123!
 ```
 
 ### 4. **Updated Collections Hook** (`src/hooks/useCollections.tsx`)
@@ -160,7 +160,7 @@ Frontend redirects to login page
 
 - [ ] Frontend loads at http://localhost:3000
 - [ ] Login page shows default credentials
-- [ ] Can login with admin@novacms.local / NovaCMS@Admin123!
+- [ ] Can login with admin@fieldstack.local / fieldstack@Admin123!
 - [ ] Dashboard loads after login
 - [ ] Collections page shows "Blog Posts"
 - [ ] Can create a new collection

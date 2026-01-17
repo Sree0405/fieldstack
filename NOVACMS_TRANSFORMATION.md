@@ -1,8 +1,8 @@
-# 🎯 NovaCMS - Headless CMS Framework Transformation Complete ✨
+# 🎯 fieldstack - Headless CMS Framework Transformation Complete ✨
 
 ## Executive Summary
 
-Your project **`sql-weaver`** has been successfully transformed into **NovaCMS** — a production-ready, self-hosted headless CMS framework. With just a `.env` configuration and `npm run dev`, users get a fully operational CMS with:
+Your project **`sql-weaver`** has been successfully transformed into **fieldstack** — a production-ready, self-hosted headless CMS framework. With just a `.env` configuration and `npm run dev`, users get a fully operational CMS with:
 
 ✅ Auto-bootstrapping database & schema  
 ✅ JWT-based authentication  
@@ -88,7 +88,7 @@ server/
 └─────────────────────────────────────────┘
 ```
 
-### After: Self-Hosted NovaCMS
+### After: Self-Hosted fieldstack
 ```
 ┌─────────────────────────────────────────┐
 │         React Frontend                  │
@@ -130,8 +130,8 @@ When backend starts (`npm run start:dev`):
    └─ "posts" collection with fields: title, content, status
 
 ✅ 4. Seed Admin User
-   ├─ Email: admin@novacms.local
-   ├─ Password: NovaCMS@Admin123! (default, must change)
+   ├─ Email: admin@fieldstack.local
+   ├─ Password: fieldstack@Admin123! (default, must change)
    └─ Role: ADMIN (all permissions)
 
 ✅ 5. Seed Default Permissions
@@ -252,7 +252,7 @@ id, role, collectionId, action (READ|CREATE|UPDATE|DELETE), condition (JSON)
 
 ### Quick Start (Docker)
 ```powershell
-cd c:\NOVACMS\sql-weaver
+cd c:\fieldstack\sql-weaver
 docker-compose up -d       # PostgreSQL + Backend running
 npm install
 npm run dev                # Frontend at http://localhost:3000
@@ -288,7 +288,7 @@ curl http://localhost:4000/health
 ```powershell
 curl -X POST http://localhost:4000/auth/login `
   -Header "Content-Type: application/json" `
-  -Body '{"email":"admin@novacms.local","password":"NovaCMS@Admin123!"}'
+  -Body '{"email":"admin@fieldstack.local","password":"fieldstack@Admin123!"}'
 # Expected: {accessToken, refreshToken, user}
 ```
 
@@ -312,7 +312,7 @@ npm run db:studio          # Opens http://localhost:5555 with UI
 
 ### .env (Backend - `server/.env`)
 ```env
-DATABASE_URL=postgresql://novacms_user:strongpassword@localhost:5432/novacms?schema=public
+DATABASE_URL=postgresql://fieldstack_user:strongpassword@localhost:5432/fieldstack?schema=public
 PORT=4000
 NODE_ENV=development
 JWT_SECRET=<generate-with-openssl-or-node>
@@ -341,24 +341,24 @@ openssl rand -hex 32
 
 ### Build Image
 ```powershell
-docker build -t novacms:latest .
+docker build -t fieldstack:latest .
 ```
 
 ### Run Standalone
 ```powershell
 docker run -d `
-  -e DATABASE_URL="postgresql://user:pass@db-host:5432/novacms" `
+  -e DATABASE_URL="postgresql://user:pass@db-host:5432/fieldstack" `
   -e JWT_SECRET="secure-random-32-chars" `
   -e PORT=4000 `
   -p 4000:4000 `
-  --name novacms `
-  novacms:latest
+  --name fieldstack `
+  fieldstack:latest
 ```
 
 ### Production Environment Variables
 ```env
 NODE_ENV=production
-DATABASE_URL=postgresql://prod_user:prod_pass@prod-db-host:5432/novacms
+DATABASE_URL=postgresql://prod_user:prod_pass@prod-db-host:5432/fieldstack
 JWT_SECRET=<strong-production-secret>
 FRONTEND_URL=https://yourdomain.com
 ```
@@ -374,7 +374,7 @@ If you want to **migrate existing data from Supabase**:
 supabase db dump --db-url postgresql://... > supabase_dump.sql
 
 # 2. Import to local PostgreSQL
-psql -U novacms_user -d novacms -f supabase_dump.sql
+psql -U fieldstack_user -d fieldstack -f supabase_dump.sql
 
 # 3. Run Prisma to sync schema
 cd server
@@ -417,7 +417,7 @@ npm run db:migrate
 
 ### Modified
 - ✏️ `.env` — Added VITE_API_URL
-- ✏️ `.env.example` — Updated for NovaCMS
+- ✏️ `.env.example` — Updated for fieldstack
 - ✏️ `SETUP.md` — Complete setup guide (was empty)
 - ✏️ `docker-compose.yml` — Created full stack
 - ✏️ `Dockerfile` — Created production image
@@ -438,7 +438,7 @@ npm run db:migrate
 ### Security
 ⚠️ **Change these before production:**
 1. `JWT_SECRET` — Generate a new secure value
-2. `admin@novacms.local` password — Change immediately after login
+2. `admin@fieldstack.local` password — Change immediately after login
 3. `BCRYPT_SALT_ROUNDS` — Keep at 12 or higher for security
 4. PostgreSQL password — Use strong, unique password
 5. `NODE_ENV` — Set to `production` in prod
@@ -478,7 +478,7 @@ npm run db:migrate
 
 ## 🎉 You're All Set!
 
-Your **NovaCMS** backend is now ready to use. Follow the **SETUP.md** file for:
+Your **fieldstack** backend is now ready to use. Follow the **SETUP.md** file for:
 1. ✅ Quick start (5 minutes with Docker)
 2. ✅ Manual setup (for local development)
 3. ✅ API documentation

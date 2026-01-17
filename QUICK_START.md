@@ -1,10 +1,10 @@
-# 🚀 Quick Reference: NovaCMS Build & Run Commands
+# 🚀 Quick Reference: fieldstack Build & Run Commands
 
 ## 30-Second Setup
 
 ```powershell
 # Terminal 1: Backend
-cd c:\NOVACMS\sql-weaver\server
+cd c:\fieldstack\sql-weaver\server
 npm install
 npm run db:generate
 npm run db:migrate:dev
@@ -12,7 +12,7 @@ npm run db:seed
 npm run start:dev
 
 # Terminal 2: Frontend (from root)
-cd c:\NOVACMS\sql-weaver
+cd c:\fieldstack\sql-weaver
 npm install
 npm run dev
 ```
@@ -20,7 +20,7 @@ npm run dev
 ## Docker Setup (Even Faster!)
 
 ```powershell
-cd c:\NOVACMS\sql-weaver
+cd c:\fieldstack\sql-weaver
 docker-compose up -d
 npm install
 npm run dev
@@ -29,8 +29,8 @@ npm run dev
 ## Default Credentials
 
 ```
-Email: admin@novacms.local
-Password: NovaCMS@Admin123!
+Email: admin@fieldstack.local
+Password: fieldstack@Admin123!
 ```
 
 ## Verify Everything Works

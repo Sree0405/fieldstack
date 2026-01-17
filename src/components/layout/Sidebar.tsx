@@ -73,7 +73,7 @@ useEffect(() => {
       <div className="relative flex h-16 items-center px-6 border-b border-white/5">
         {!collapsed && (
           <span className="text-lg font-semibold tracking-wide text-[#E6E8F2]">
-            NovaCMS
+            fieldstack
           </span>
         )}
 

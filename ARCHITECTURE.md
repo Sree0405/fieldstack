@@ -1,4 +1,4 @@
-# NovaCMS Architecture & Data Flow
+# fieldstack Architecture & Data Flow
 
 ## System Architecture Diagram
 
@@ -22,7 +22,7 @@
 └─────────────────────────────────────────────────────────────────────────┘
                               ↓
 ┌─────────────────────────────────────────────────────────────────────────┐
-│                   NovaCMS Backend (Port 4000)                           │
+│                   fieldstack Backend (Port 4000)                           │
 ├─────────────────────────────────────────────────────────────────────────┤
 │                         NestJS Application                              │
 │                                                                         │
@@ -100,7 +100,7 @@
 ```
 1. User enters credentials
    ↓
-   {"email": "admin@novacms.local", "password": "NovaCMS@Admin123!"}
+   {"email": "admin@fieldstack.local", "password": "fieldstack@Admin123!"}
    ↓
    POST /auth/login
    ↓
@@ -129,7 +129,7 @@
      refreshToken: "eyJh...",
      user: {
        id: "uuid",
-       email: "admin@novacms.local",
+       email: "admin@fieldstack.local",
        roles: ["ADMIN"]
      }
    }
@@ -273,7 +273,7 @@ app.listen(4000)
       └─ Create "posts" collection with sample fields
    ↓
 ✓ Seed Admin User
-   ├─ Check if admin@novacms.local exists
+   ├─ Check if admin@fieldstack.local exists
    └─ If not:
       ├─ Hash password with bcrypt
       ├─ INSERT INTO users
@@ -354,7 +354,7 @@ permissions (Access control)
 ├─────────────────────────────────────────────┤
 │                                             │
 │  ┌─────────────────────────────────────┐   │
-│  │     Docker Network: novacms-network │   │
+│  │     Docker Network: fieldstack-network │   │
 │  │                                     │   │
 │  │  ┌──────────────┐  ┌────────────┐  │   │
 │  │  │ PostgreSQL   │  │ NestJS     │  │   │

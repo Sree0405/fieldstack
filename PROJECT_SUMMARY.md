@@ -1,4 +1,4 @@
-# 🚀 NovaCMS - Complete Implementation Summary
+# 🚀 fieldstack - Complete Implementation Summary
 
 ## Project Overview
 
@@ -37,7 +37,7 @@ Transformed **sql-weaver** from a Supabase-dependent frontend-only application i
 ┌─────────────────────────────────────────────────────────────┐
 │              DATA PERSISTENCE LAYER                          │
 │  PostgreSQL 16 + Prisma ORM                                 │
-│  localhost:5432/novacms                                     │
+│  localhost:5432/fieldstack                                     │
 │  ├─ Collections (metadata)                                  │
 │  ├─ Fields (schema definition)                              │
 │  ├─ Users & Profiles                                        │
@@ -107,7 +107,7 @@ Transformed **sql-weaver** from a Supabase-dependent frontend-only application i
 ## File Structure
 
 ```
-novacms/
+fieldstack/
 ├── src/                           # React frontend
 │   ├── pages/                     # Page components
 │   │   ├── Auth.tsx              # Login page
@@ -219,7 +219,7 @@ npm run dev             # Terminal 2: Frontend (from root)
 
 # 4. Access
 # Frontend:   http://localhost:3000
-# Database:   postgres://localhost:5432/novacms
+# Database:   postgres://localhost:5432/fieldstack
 # PgAdmin:    http://localhost:5050 (optional)
 ```
 
@@ -228,8 +228,8 @@ npm run dev             # Terminal 2: Frontend (from root)
 ## Default Credentials
 
 ```
-Email:    admin@novacms.local
-Password: NovaCMS@Admin123!
+Email:    admin@fieldstack.local
+Password: fieldstack@Admin123!
 ```
 
 ⚠️ **CHANGE IMMEDIATELY AFTER FIRST LOGIN IN PRODUCTION**
@@ -366,13 +366,13 @@ DELETE /crud/:collection/:id                Delete item
 ### 1. Docker (Recommended)
 ```dockerfile
 # Build image
-docker build -t novacms:latest .
+docker build -t fieldstack:latest .
 
 # Run container
 docker run -p 4000:4000 \
   -e DATABASE_URL=postgresql://... \
   -e JWT_SECRET=... \
-  novacms:latest
+  fieldstack:latest
 ```
 
 ### 2. Traditional Server
@@ -448,4 +448,4 @@ npm start
 
 **Questions?** Refer to TROUBLESHOOTING.md or check backend logs.
 
-🎉 **Thank you for using NovaCMS!**
+🎉 **Thank you for using fieldstack!**

@@ -1,7 +1,7 @@
-# 🚀 NovaCMS - Quick Start Guide
+# 🚀 fieldstack - Quick Start Guide
 
 ## Overview
-NovaCMS is a production-ready headless CMS built with:
+fieldstack is a production-ready headless CMS built with:
 - **Backend:** NestJS + Prisma ORM + PostgreSQL
 - **Frontend:** React + TailwindCSS + Vite
 - **Database:** PostgreSQL (self-hosted)
@@ -21,7 +21,7 @@ NovaCMS is a production-ready headless CMS built with:
 
 ```powershell
 # 1. Navigate to project root
-cd c:\NOVACMS\sql-weaver
+cd c:\fieldstack\sql-weaver
 
 # 2. Start Docker services (PostgreSQL + Backend)
 docker-compose up -d
@@ -36,8 +36,8 @@ npm run dev
 Then open **http://localhost:3000** in your browser.
 
 > Default Admin Credentials:
-> - Email: `admin@novacms.local`
-> - Password: `NovaCMS@Admin123!` (change on first login!)
+> - Email: `admin@fieldstack.local`
+> - Password: `fieldstack@Admin123!` (change on first login!)
 
 ---
 
@@ -48,18 +48,18 @@ Then open **http://localhost:3000** in your browser.
 ```powershell
 # After installing PostgreSQL, create a database
 $env:PGPASSWORD = "strongpassword"
-psql -U postgres -c "CREATE DATABASE novacms;"
-psql -U postgres -d novacms -c "CREATE USER novacms_user WITH PASSWORD 'strongpassword';"
-psql -U postgres -d novacms -c "ALTER ROLE novacms_user CREATEDB;"
+psql -U postgres -c "CREATE DATABASE fieldstack;"
+psql -U postgres -d fieldstack -c "CREATE USER fieldstack_user WITH PASSWORD 'strongpassword';"
+psql -U postgres -d fieldstack -c "ALTER ROLE fieldstack_user CREATEDB;"
 ```
 
 **Windows (Using Docker):**
 ```powershell
 docker run -d `
-  --name novacms-postgres `
-  -e POSTGRES_USER=novacms_user `
+  --name fieldstack-postgres `
+  -e POSTGRES_USER=fieldstack_user `
   -e POSTGRES_PASSWORD=strongpassword `
-  -e POSTGRES_DB=novacms `
+  -e POSTGRES_DB=fieldstack `
   -p 5432:5432 `
   postgres:16-alpine
 ```
@@ -76,7 +76,7 @@ Copy-Item .env.example .env
 node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
 
 # Update .env with the generated secret
-# DATABASE_URL=postgresql://novacms_user:strongpassword@localhost:5432/novacms?schema=public
+# DATABASE_URL=postgresql://fieldstack_user:strongpassword@localhost:5432/fieldstack?schema=public
 # JWT_SECRET=<paste-generated-value>
 
 # Install dependencies
@@ -145,7 +145,7 @@ sql-weaver/
 
 ### Backend (.env in `server/`)
 ```env
-DATABASE_URL=postgresql://novacms_user:strongpassword@localhost:5432/novacms?schema=public
+DATABASE_URL=postgresql://fieldstack_user:strongpassword@localhost:5432/fieldstack?schema=public
 PORT=4000
 JWT_SECRET=<your-random-32-char-secret>
 ACCESS_TOKEN_EXPIRES_IN=15m
@@ -165,7 +165,7 @@ VITE_API_URL=http://localhost:4000
 ```powershell
 # Connect to PostgreSQL
 $env:PGPASSWORD = "strongpassword"
-psql -U novacms_user -d novacms
+psql -U fieldstack_user -d fieldstack
 
 # List tables
 \dt
@@ -186,7 +186,7 @@ $loginResponse = Invoke-WebRequest `
   -Uri "http://localhost:4000/auth/login" `
   -Method POST `
   -Headers @{"Content-Type"="application/json"} `
-  -Body (@{email="admin@novacms.local"; password="NovaCMS@Admin123!"} | ConvertTo-Json)
+  -Body (@{email="admin@fieldstack.local"; password="fieldstack@Admin123!"} | ConvertTo-Json)
 
 # Save access token
 $token = ($loginResponse.Content | ConvertFrom-Json).accessToken
@@ -259,15 +259,15 @@ docker-compose exec backend npm run db:studio  # Open Prisma Studio
 ### Docker (Production)
 ```powershell
 # Build image
-docker build -t novacms:latest .
+docker build -t fieldstack:latest .
 
 # Run with external database
 docker run -d `
-  -e DATABASE_URL="postgresql://user:pass@db-host:5432/novacms?schema=public" `
+  -e DATABASE_URL="postgresql://user:pass@db-host:5432/fieldstack?schema=public" `
   -e PORT=4000 `
   -e JWT_SECRET="your-secure-secret" `
   -p 4000:4000 `
-  novacms:latest
+  fieldstack:latest
 ```
 
 ### Environment Variables for Production
@@ -283,7 +283,7 @@ FRONTEND_URL=<your-domain-frontend>
 ## 🐛 Troubleshooting
 
 ### "Connection refused" to PostgreSQL
-- Check if PostgreSQL is running: `pg_isready -U novacms_user`
+- Check if PostgreSQL is running: `pg_isready -U fieldstack_user`
 - Verify credentials match in `.env`
 - Check port 5432 is open
 
@@ -316,8 +316,8 @@ POST /auth/login
 Content-Type: application/json
 
 {
-  "email": "admin@novacms.local",
-  "password": "NovaCMS@Admin123!"
+  "email": "admin@fieldstack.local",
+  "password": "fieldstack@Admin123!"
 }
 
 Response:
@@ -326,7 +326,7 @@ Response:
   "refreshToken": "eyJh...",
   "user": {
     "id": "uuid",
-    "email": "admin@novacms.local",
+    "email": "admin@fieldstack.local",
     "roles": ["ADMIN"]
   }
 }
@@ -442,4 +442,4 @@ MIT - See LICENSE file for details
 
 ---
 
-**Happy building with NovaCMS! 🎉**
+**Happy building with fieldstack! 🎉**

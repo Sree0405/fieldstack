@@ -1,4 +1,4 @@
-# 🎯 NovaCMS: Post-Implementation Checklist
+# 🎯 fieldstack: Post-Implementation Checklist
 
 ## ✅ What Has Been Completed
 
@@ -31,7 +31,7 @@
 
 ### Documentation
 - [x] SETUP.md (complete quick-start)
-- [x] NOVACMS_TRANSFORMATION.md (architecture)
+- [x] fieldstack_TRANSFORMATION.md (architecture)
 - [x] IMPLEMENTATION_COMPLETE.md (summary)
 - [x] API documentation inline
 - [x] Troubleshooting guide
@@ -51,7 +51,7 @@
 ### Immediate (Today)
 1. **Review Files Created**
    - [ ] Read `SETUP.md` (complete guide)
-   - [ ] Skim `NOVACMS_TRANSFORMATION.md` (architecture)
+   - [ ] Skim `fieldstack_TRANSFORMATION.md` (architecture)
    - [ ] Review `IMPLEMENTATION_COMPLETE.md` (summary)
 
 2. **Set Up Local Environment**
@@ -77,7 +77,7 @@
 
 7. **Verify Installation**
    - [ ] Open http://localhost:3000
-   - [ ] Login: `admin@novacms.local` / `NovaCMS@Admin123!`
+   - [ ] Login: `admin@fieldstack.local` / `fieldstack@Admin123!`
    - [ ] See default "Blog Posts" collection
 
 ### Short-Term (This Week)
@@ -167,7 +167,7 @@ Expected: 200 OK response
 ```powershell
 curl -X POST http://localhost:4000/auth/login `
   -Header "Content-Type: application/json" `
-  -Body '{"email":"admin@novacms.local","password":"NovaCMS@Admin123!"}'
+  -Body '{"email":"admin@fieldstack.local","password":"fieldstack@Admin123!"}'
 ```
 Expected: { accessToken, refreshToken, user }
 
@@ -221,7 +221,7 @@ See SETUP.md for detailed troubleshooting guide.
 
 ### To Understand the System
 1. **Architecture:**
-   - Read: `NOVACMS_TRANSFORMATION.md` (Diagram section)
+   - Read: `fieldstack_TRANSFORMATION.md` (Diagram section)
    - Code: `server/src/main.ts` (entry point)
 
 2. **Database:**
@@ -288,11 +288,11 @@ npm run test:cov           # Coverage report
 
 ## 🎯 Success Metrics
 
-Your NovaCMS is ready when:
+Your fieldstack is ready when:
 
 ✅ Backend starts without errors
    ```
-   ✅ NovaCMS Backend running on http://localhost:4000
+   ✅ fieldstack Backend running on http://localhost:4000
    ```
 
 ✅ Frontend loads at http://localhost:3000
@@ -302,8 +302,8 @@ Your NovaCMS is ready when:
 
 ✅ Can login with default credentials
    ```
-   Email: admin@novacms.local
-   Password: NovaCMS@Admin123!
+   Email: admin@fieldstack.local
+   Password: fieldstack@Admin123!
    ```
 
 ✅ Dashboard shows Collections
@@ -347,7 +347,7 @@ Before declaring victory:
 
 ## 🚀 You're Ready!
 
-Everything is set up and tested. Your NovaCMS is:
+Everything is set up and tested. Your fieldstack is:
 
 ✨ **Production-Ready** — Enterprise-grade architecture  
 ✨ **Self-Contained** — No external cloud dependencies  

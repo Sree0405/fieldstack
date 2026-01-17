@@ -1,5 +1,5 @@
 /**
- * NovaCMS API Client
+ * fieldstack API Client
  * Communicates with the NestJS backend (http://localhost:4000)
  */
 

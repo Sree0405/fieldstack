@@ -28,7 +28,7 @@ export default function Settings() {
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
   const [settings, setSettings] = useState<SystemSettings>({
-    projectName: 'NovaCMS',
+    projectName: 'fieldstack',
     projectUrl: 'http://localhost:4000',
     apiSettings: {
       enableRestApi: true,
@@ -138,7 +138,7 @@ export default function Settings() {
             <Label htmlFor="project-name">Project Name</Label>
             <Input
               id="project-name"
-              placeholder="NovaCMS"
+              placeholder="fieldstack"
               value={settings.projectName}
               onChange={(e) => setSettings({ ...settings, projectName: e.target.value })}
             />
@@ -147,7 +147,7 @@ export default function Settings() {
             <Label htmlFor="project-url">Project URL</Label>
             <Input
               id="project-url"
-              placeholder="https://api.novacms.dev"
+              placeholder="https://api.fieldstack.dev"
               value={settings.projectUrl}
               onChange={(e) => setSettings({ ...settings, projectUrl: e.target.value })}
             />

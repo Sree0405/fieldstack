@@ -10,7 +10,7 @@ export class BootstrapService {
 
   async init() {
     try {
-      this.logger.log('🚀 Starting NovaCMS Bootstrap...');
+      this.logger.log('🚀 Starting fieldstack Bootstrap...');
 
       // Step 1: Check DB connection
       await this.checkDatabase();
@@ -126,7 +126,7 @@ export class BootstrapService {
     try {
       this.logger.log('👤 Seeding admin user...');
 
-      const adminEmail = 'admin@novacms.local';
+      const adminEmail = 'admin@fieldstack.local';
       const existingAdmin = await this.prisma.user.findUnique({
         where: { email: adminEmail },
       });
@@ -146,7 +146,7 @@ export class BootstrapService {
       }
 
       // Generate a default password (should be changed on first login)
-      const defaultPassword = 'NovaCMS@Admin123!';
+      const defaultPassword = 'fieldstack@Admin123!';
       const hashedPassword = await bcrypt.hash(defaultPassword, 12);
 
       const adminUser = await this.prisma.user.create({

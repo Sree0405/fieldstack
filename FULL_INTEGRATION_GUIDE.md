@@ -1,4 +1,4 @@
-# 🚀 NovaCMS Full Integration - Comprehensive Implementation Guide
+# 🚀 fieldstack Full Integration - Comprehensive Implementation Guide
 
 **Status:** Analysis Complete | Ready for Implementation  
 **Date:** November 23, 2025  
@@ -78,7 +78,7 @@ npm run start:dev              # Backend should start on port 4000
 
 **Expected Output:**
 ```
-✅ NovaCMS Backend running on http://localhost:4000
+✅ fieldstack Backend running on http://localhost:4000
 ```
 
 ---
@@ -131,7 +131,7 @@ export default defineConfig({
 cd server
 npm run build
 npm run start:dev
-# Monitor for errors, should see: ✅ NovaCMS Backend running on http://localhost:4000
+# Monitor for errors, should see: ✅ fieldstack Backend running on http://localhost:4000
 ```
 
 ### Step 3: Start Frontend
@@ -143,7 +143,7 @@ npm run dev
 
 ### Step 4: Test Login
 1. Open http://localhost:3000 (or 8080)
-2. Enter: `admin@novacms.local` / `NovaCMS@Admin123!`
+2. Enter: `admin@fieldstack.local` / `fieldstack@Admin123!`
 3. If CORS error: Check console, verify both are running
 4. If "Invalid credentials": Check database has seeded user
    ```bash
@@ -329,7 +329,7 @@ npm run db:migrate:dev --name "add_file_model"
 **Key Logic:**
 ```typescript
 async init() {
-  console.log('🚀 NovaCMS Bootstrap starting...');
+  console.log('🚀 fieldstack Bootstrap starting...');
   
   try {
     // 1. Check DB connection
@@ -384,7 +384,7 @@ private printSummary() {
   console.log('✅ Database: Connected');
   console.log('✅ Migrations: Applied');
   console.log('✅ Roles: ADMIN, EDITOR, VIEWER');
-  console.log('✅ Admin User: admin@novacms.local / NovaCMS@Admin123!');
+  console.log('✅ Admin User: admin@fieldstack.local / fieldstack@Admin123!');
   console.log('\n📚 API Endpoints:');
   console.log('  POST   /auth/register');
   console.log('  POST   /auth/login');
@@ -428,7 +428,7 @@ npm run dev                 # Starts on http://localhost:3000 or 8080
 
 # 4. Access
 # Browser: http://localhost:3000
-# Login: admin@novacms.local / NovaCMS@Admin123!
+# Login: admin@fieldstack.local / fieldstack@Admin123!
 ```
 
 ### For Docker:
@@ -470,7 +470,7 @@ npm run start:dev
 
 - [ ] **2. Rebuild & Start Backend**
   - Command: `npm run start:dev`
-  - Expect: ✅ NovaCMS Backend running on http://localhost:4000
+  - Expect: ✅ fieldstack Backend running on http://localhost:4000
 
 - [ ] **3. Ensure DB Seeded**
   - Command: `npm run db:seed`
@@ -482,7 +482,7 @@ npm run start:dev
 
 - [ ] **5. Test Login**
   - Navigate to http://localhost:3000
-  - Enter: admin@novacms.local / NovaCMS@Admin123!
+  - Enter: admin@fieldstack.local / fieldstack@Admin123!
   - Expect: Dashboard loads, no errors
 
 ---
@@ -546,7 +546,7 @@ curl http://localhost:4000/health
 # 2. Test login
 curl -X POST http://localhost:4000/auth/login \
   -H "Content-Type: application/json" \
-  -d '{"email":"admin@novacms.local","password":"NovaCMS@Admin123!"}'
+  -d '{"email":"admin@fieldstack.local","password":"fieldstack@Admin123!"}'
 # Expect: { accessToken, refreshToken, user }
 
 # 3. Test me endpoint

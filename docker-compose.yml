@@ -4,31 +4,31 @@ services:
   # PostgreSQL Database
   postgres:
     image: postgres:16-alpine
-    container_name: novacms-postgres
+    container_name: fieldstack-postgres
     environment:
-      POSTGRES_USER: novacms_user
+      POSTGRES_USER: fieldstack_user
       POSTGRES_PASSWORD: strongpassword
-      POSTGRES_DB: novacms
+      POSTGRES_DB: fieldstack
     ports:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U novacms_user -d novacms"]
+      test: ["CMD-SHELL", "pg_isready -U fieldstack_user -d fieldstack"]
       interval: 10s
       timeout: 5s
       retries: 5
     networks:
-      - novacms-network
+      - fieldstack-network
 
-  # NovaCMS Backend
+  # fieldstack Backend
   backend:
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: novacms-backend
+    container_name: fieldstack-backend
     environment:
-      DATABASE_URL: postgresql://novacms_user:strongpassword@postgres:5432/novacms?schema=public
+      DATABASE_URL: postgresql://fieldstack_user:strongpassword@postgres:5432/fieldstack?schema=public
       PORT: 4000
       NODE_ENV: development
       JWT_SECRET: your-jwt-secret-change-in-production
@@ -45,12 +45,12 @@ services:
       - ./uploads:/app/uploads
     command: npm run start:dev
     networks:
-      - novacms-network
+      - fieldstack-network
 
 volumes:
   postgres_data:
     driver: local
 
 networks:
-  novacms-network:
+  fieldstack-network:
     driver: bridge

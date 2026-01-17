@@ -102,7 +102,7 @@ export default function Dashboard() {
       <div>
         <h1 className="text-3xl font-bold text-foreground">Dashboard</h1>
         <p className="text-muted-foreground mt-2">
-          Welcome to NovaCMS - Your headless content management system
+          Welcome to fieldstack - Your headless content management system
         </p>
       </div>
 

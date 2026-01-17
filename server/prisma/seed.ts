@@ -112,8 +112,8 @@ async function main() {
   console.log(`✅ Created fields for ${posts.displayName}`);
 
   // Create admin user
-  const adminEmail = 'admin@novacms.local';
-  const adminPassword = 'NovaCMS@Admin123!';
+  const adminEmail = 'admin@fieldstack.local';
+  const adminPassword = 'fieldstack@Admin123!';
   const hashedPassword = await bcrypt.hash(adminPassword, 12);
 
   const admin = await prisma.user.upsert({
@@ -144,14 +144,14 @@ async function main() {
   const editorHashedPassword = await bcrypt.hash(editorPassword, 12);
 
   const editor = await prisma.user.upsert({
-    where: { email: 'editor@novacms.local' },
+    where: { email: 'editor@fieldstack.local' },
     update: {},
     create: {
-      email: 'editor@novacms.local',
+      email: 'editor@fieldstack.local',
       password: editorHashedPassword,
       profile: {
         create: {
-          email: 'editor@novacms.local',
+          email: 'editor@fieldstack.local',
           displayName: 'Editor',
         },
       },
@@ -163,20 +163,20 @@ async function main() {
     },
   });
 
-  console.log(`✅ Created editor user: editor@novacms.local`);
+  console.log(`✅ Created editor user: editor@fieldstack.local`);
 
   const viewerPassword = 'Viewer@Password123!';
   const viewerHashedPassword = await bcrypt.hash(viewerPassword, 12);
 
   const viewer = await prisma.user.upsert({
-    where: { email: 'viewer@novacms.local' },
+    where: { email: 'viewer@fieldstack.local' },
     update: {},
     create: {
-      email: 'viewer@novacms.local',
+      email: 'viewer@fieldstack.local',
       password: viewerHashedPassword,
       profile: {
         create: {
-          email: 'viewer@novacms.local',
+          email: 'viewer@fieldstack.local',
           displayName: 'Viewer',
         },
       },
@@ -188,7 +188,7 @@ async function main() {
     },
   });
 
-  console.log(`✅ Created viewer user: viewer@novacms.local`);
+  console.log(`✅ Created viewer user: viewer@fieldstack.local`);
 
   // Create default permissions
   const adminPerms = ['READ', 'CREATE', 'UPDATE', 'DELETE'];

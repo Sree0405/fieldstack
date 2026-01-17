@@ -1,8 +1,8 @@
-# 🎯 NovaCMS Implementation Summary
+# 🎯 fieldstack Implementation Summary
 
 ## What Was Accomplished
 
-Your `sql-weaver` project has been **fully transformed** into **NovaCMS** — a production-ready, self-hosted headless CMS framework with **zero external dependencies** (except PostgreSQL).
+Your `sql-weaver` project has been **fully transformed** into **fieldstack** — a production-ready, self-hosted headless CMS framework with **zero external dependencies** (except PostgreSQL).
 
 ---
 
@@ -69,7 +69,7 @@ Your `sql-weaver` project has been **fully transformed** into **NovaCMS** — a 
 ✨ Dockerfile                        # Multi-stage production build
 ✨ docker-compose.yml                # Local dev stack (PostgreSQL + Backend)
 ✨ SETUP.md                          # Complete quick-start guide
-✨ NOVACMS_TRANSFORMATION.md         # Architecture & implementation docs
+✨ fieldstack_TRANSFORMATION.md         # Architecture & implementation docs
 ✨ .env.example                      # Frontend env variables (updated)
 ✨ server/.env.example               # Backend env variables
 ```
@@ -84,7 +84,7 @@ git clone <repo>
 cd sql-weaver
 docker-compose up -d          # ✅ Database + Backend running in 30 seconds
 npm install && npm run dev    # ✅ Frontend running in 2 minutes
-# Admin at admin@novacms.local → http://localhost:3000
+# Admin at admin@fieldstack.local → http://localhost:3000
 ```
 
 ### 2️⃣ Dynamic API Generation
@@ -148,7 +148,7 @@ Problem: Limited to Supabase cloud + managed auth
 Limited control, external dependency
 ```
 
-### After (Self-Hosted NovaCMS)
+### After (Self-Hosted fieldstack)
 ```
 ✅ Full control over infrastructure
 ✅ No external dependencies (except PostgreSQL)
@@ -207,7 +207,7 @@ Limited control, external dependency
 ```powershell
 # 1. Database
 ✅ PostgreSQL running on localhost:5432
-   → psql -U novacms_user -d novacms -c "\dt"
+   → psql -U fieldstack_user -d fieldstack -c "\dt"
 
 # 2. Backend API
 ✅ Backend listening on localhost:4000
@@ -215,7 +215,7 @@ Limited control, external dependency
 
 # 3. Authentication
 ✅ Login endpoint works
-   → POST /auth/login with admin@novacms.local
+   → POST /auth/login with admin@fieldstack.local
 
 # 4. Collections
 ✅ Collections API responds
@@ -233,7 +233,7 @@ Limited control, external dependency
 | Document | Purpose | Location |
 |----------|---------|----------|
 | **SETUP.md** | Complete quick-start guide | `/SETUP.md` |
-| **NOVACMS_TRANSFORMATION.md** | Implementation details | `/NOVACMS_TRANSFORMATION.md` |
+| **fieldstack_TRANSFORMATION.md** | Implementation details | `/fieldstack_TRANSFORMATION.md` |
 | **server/.env.example** | Backend configuration | `server/.env.example` |
 | **API Endpoints** | REST API specification | In SETUP.md |
 | **Troubleshooting** | Common issues & fixes | In SETUP.md |
@@ -244,12 +244,12 @@ Limited control, external dependency
 
 ### Option A: Docker (Recommended - 30 seconds)
 ```powershell
-cd c:\NOVACMS\sql-weaver
+cd c:\fieldstack\sql-weaver
 docker-compose up -d
 npm install
 npm run dev
 # Open http://localhost:3000
-# Login: admin@novacms.local / NovaCMS@Admin123!
+# Login: admin@fieldstack.local / fieldstack@Admin123!
 ```
 
 ### Option B: Local Setup (5 minutes)

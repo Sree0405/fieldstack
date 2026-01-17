@@ -1,4 +1,4 @@
-# 📋 NovaCMS Quick Reference Card
+# 📋 fieldstack Quick Reference Card
 
 ## 🚀 Commands
 
@@ -48,14 +48,14 @@ docker-compose logs -f       # View logs
 ## 🔐 Default Credentials
 
 ```
-Email:    admin@novacms.local
-Password: NovaCMS@Admin123!
+Email:    admin@fieldstack.local
+Password: fieldstack@Admin123!
 ```
 
 Alternative users (after seed):
 ```
-editor@novacms.local     / Editor@Password123!
-viewer@novacms.local     / Viewer@Password123!
+editor@fieldstack.local     / Editor@Password123!
+viewer@fieldstack.local     / Viewer@Password123!
 ```
 
 ---
@@ -77,10 +77,10 @@ viewer@novacms.local     / Viewer@Password123!
 ```
 Host:     localhost
 Port:     5432
-Database: novacms
-User:     novacms_user
+Database: fieldstack
+User:     fieldstack_user
 Password: Sree2005
-URL:      postgresql://novacms_user:Sree2005@localhost:5432/novacms
+URL:      postgresql://fieldstack_user:Sree2005@localhost:5432/fieldstack
 ```
 
 ### Quick Queries
@@ -95,7 +95,7 @@ SELECT id, name, displayName, tableName FROM collections;
 SELECT role, action FROM permissions WHERE collectionId = '<collection-id>';
 
 -- Reset admin password (hash must be bcrypt)
-UPDATE users SET password = '$2b$12$...' WHERE email = 'admin@novacms.local';
+UPDATE users SET password = '$2b$12$...' WHERE email = 'admin@fieldstack.local';
 ```
 
 ---
@@ -106,7 +106,7 @@ UPDATE users SET password = '$2b$12$...' WHERE email = 'admin@novacms.local';
 ```bash
 curl -X POST http://localhost:4000/auth/login \
   -H "Content-Type: application/json" \
-  -d '{"email":"admin@novacms.local","password":"NovaCMS@Admin123!"}'
+  -d '{"email":"admin@fieldstack.local","password":"fieldstack@Admin123!"}'
 ```
 
 ### Authenticated Request
@@ -206,7 +206,7 @@ PORT=4001 npm run start:dev
    npm run dev
 
 3. Browser - http://localhost:3000
-   Login with: admin@novacms.local / NovaCMS@Admin123!
+   Login with: admin@fieldstack.local / fieldstack@Admin123!
 
 4. Dashboard - Create/view collections and items
 
@@ -271,7 +271,7 @@ npm run dev 2>&1 | tee frontend.log
 curl http://localhost:4000/health
 
 # Database health
-psql -U novacms_user -d novacms -c "SELECT 1"
+psql -U fieldstack_user -d fieldstack -c "SELECT 1"
 ```
 
 ---
@@ -287,8 +287,8 @@ npm run build
 npm start
 
 # Or use Docker
-docker build -t novacms:latest .
-docker run -p 4000:4000 novacms:latest
+docker build -t fieldstack:latest .
+docker run -p 4000:4000 fieldstack:latest
 ```
 
 ---

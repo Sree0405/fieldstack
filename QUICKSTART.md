@@ -1,4 +1,4 @@
-# 🚀 NovaCMS - Complete Implementation Guide
+# 🚀 fieldstack - Complete Implementation Guide
 
 ## ✅ System Status
 
@@ -17,8 +17,8 @@ http://localhost:8081
 ```
 
 ### 2. Login with Demo Credentials
-- **Email:** `admin@novacms.local`
-- **Password:** `NovaCMS@Admin123!`
+- **Email:** `admin@fieldstack.local`
+- **Password:** `fieldstack@Admin123!`
 
 ### 3. You're In! 🎉
 
@@ -96,9 +96,9 @@ http://localhost:8081
 
 | Service | URL | Email | Password |
 |---------|-----|-------|----------|
-| Frontend | http://localhost:8081 | admin@novacms.local | NovaCMS@Admin123! |
+| Frontend | http://localhost:8081 | admin@fieldstack.local | fieldstack@Admin123! |
 | Backend API | http://localhost:4000 | - | - |
-| Database | localhost:5432 | novacms_user | Sree2005 |
+| Database | localhost:5432 | fieldstack_user | Sree2005 |
 
 ---
 
@@ -266,7 +266,7 @@ Dynamic Tables:
 ### Backend won't start
 ```bash
 # Check database connection
-psql -U novacms_user -d novacms -c "SELECT 1"
+psql -U fieldstack_user -d fieldstack -c "SELECT 1"
 
 # Verify .env file
 cat server/.env
@@ -338,8 +338,8 @@ await apiClient.getCollectionSchema(collectionId);
 ```typescript
 // 1. Login
 const loginResult = await apiClient.login({
-  email: 'admin@novacms.local',
-  password: 'NovaCMS@Admin123!'
+  email: 'admin@fieldstack.local',
+  password: 'fieldstack@Admin123!'
 });
 
 // 2. Create collection
@@ -413,7 +413,7 @@ For issues or questions:
 
 **Last Updated:** November 23, 2025  
 **Status:** ✅ Production Ready (v1.0)  
-**Team:** NovaCMS Development  
+**Team:** fieldstack Development  
 
 ---
 

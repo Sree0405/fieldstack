@@ -50,7 +50,7 @@ export default function Notifications() {
         id: '4',
         type: 'warning',
         title: 'System Update',
-        message: 'A new version of NovaCMS is available',
+        message: 'A new version of fieldstack is available',
         timestamp: new Date(Date.now() - 2 * 3600000),
         read: true,
       },
