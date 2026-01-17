@@ -40,9 +40,7 @@
     "passport-jwt": "^4.0.1",
     "reflect-metadata": "^0.1.13",
     "rimraf": "^5.0.5",
-    "rxjs": "^7.8.1"
-  },
-  "devDependencies": {
+    "rxjs": "^7.8.1",
     "@nestjs/cli": "^10.2.1",
     "@nestjs/schematics": "^10.0.2",
     "@nestjs/testing": "^10.2.10",
@@ -64,7 +62,7 @@
     "ts-node": "^10.9.2",
     "tsconfig-paths": "^4.2.0",
     "tsx": "^4.7.0",
-    "typescript": "^5.3.3"
+    "typescript": "^5.3.3"    
   },
   "jest": {
     "moduleFileExtensions": [
@@ -79,7 +77,11 @@
     },
     "collectCoverageFrom": [
       "**/*.(t|j)s"
-    ],
+    ],  
+    "compilerOptions": {
+      "skipLibCheck": true
+    },
+
     "coverageDirectory": "../coverage",
     "testEnvironment": "node"
   }
