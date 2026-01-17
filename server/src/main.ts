@@ -11,6 +11,8 @@ import { join } from 'path';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
+app.setGlobalPrefix('api');
+
   const isProduction = process.env.NODE_ENV === 'production';
 
   if (!isProduction) {
