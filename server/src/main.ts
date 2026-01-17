@@ -5,65 +5,49 @@ import { AppModule } from './app.module';
 import { BootstrapService } from './bootstrap/bootstrap.service';
 
 import * as express from 'express';
+import type { Request, Response } from 'express';
 import { join } from 'path';
-import { Request, Response } from 'express';
 
-async function bootstrap(): Promise<void> {
+async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
-  // Enable CORS for frontend
-  const isDevelopment = process.env.NODE_ENV === 'development';
-  const corsOrigins = isDevelopment
-    ? ['http://localhost:3000', 'http://localhost:8080', 'http://localhost:5173']
-    : (process.env.FRONTEND_URL || 'http://localhost:3000');
+  const isProduction = process.env.NODE_ENV === 'production';
 
-  app.enableCors({
-    origin: corsOrigins,
-    credentials: true,
-  });
+  if (!isProduction) {
+    app.enableCors({
+      origin: [
+        'http://localhost:3000',
+        'http://localhost:5173',
+        'http://localhost:8080',
+      ],
+      credentials: true,
+    });
+  }
 
-  // Global validation
   app.useGlobalPipes(
     new ValidationPipe({
       transform: true,
+      whitelist: true,
     }),
   );
 
-  // Run bootstrap on startup
   const bootstrapService = app.get(BootstrapService);
   await bootstrapService.init();
+if (isProduction) {
+  const clientPath = join(__dirname, '..', '..', 'dist');
 
-  /* ----------------------------------------------------
-     SERVE ADMIN DASHBOARD (PRODUCTION ONLY)
-     (Does NOT affect dev behavior)
-  ---------------------------------------------------- */
-if (!isDevelopment) {
-  const distPath = join(__dirname, '..', '..', 'dist');
+  const server = app.getHttpAdapter().getInstance() as express.Express;
 
-  const server = app.getHttpAdapter().getInstance();
+  server.use(express.static(clientPath));
 
-  server.use(express.static(distPath));
-
-  // SPA fallback (React Router)
   server.get('*', (_req: Request, res: Response) => {
-    res.sendFile(join(distPath, 'index.html'));
+    res.sendFile(join(clientPath, 'index.html'));
   });
 }
 
-  const port = Number(process.env.PORT) || 4000;
-  await app.listen(port);
 
-  console.log(`\n✅ fieldstack Backend running on http://localhost:${port}`);
-  console.log(`📚 API Documentation: http://localhost:${port}/api`);
-
-  if (isDevelopment) {
-    console.log(`🔐 Admin Panel: http://localhost:3000\n`);
-  } else {
-    console.log(`🔐 Admin Panel: http://localhost:${port}\n`);
-  }
+  const port = process.env.PORT || 4000;
+  await app.listen(port, '0.0.0.0');
 }
 
-bootstrap().catch((error: unknown) => {
-  console.error('❌ Failed to start application:', error);
-  process.exit(1);
-});
+bootstrap();
