@@ -47,7 +47,7 @@ const common_1 = require("@nestjs/common");
 const prisma_service_1 = require("../prisma/prisma.service");
 const fs = __importStar(require("fs/promises"));
 const path = __importStar(require("path"));
-const uuid_1 = require("uuid");
+const crypto_1 = require("crypto");
 let FilesService = class FilesService {
     constructor(prisma) {
         this.prisma = prisma;
@@ -71,7 +71,7 @@ let FilesService = class FilesService {
             throw new common_1.BadRequestException('No file provided');
         }
         try {
-            const fileId = (0, uuid_1.v4)();
+            const fileId = (0, crypto_1.randomUUID)();
             const fileExtension = path.extname(file.originalname);
             const fileName = `${fileId}${fileExtension}`;
             const filePath = path.join(this.uploadDir, fileName);

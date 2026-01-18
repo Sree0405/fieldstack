@@ -2,7 +2,8 @@ import { Injectable, BadRequestException, NotFoundException } from '@nestjs/comm
 import { PrismaService } from '../prisma/prisma.service';
 import * as fs from 'fs/promises';
 import * as path from 'path';
-import { v4 as uuidv4 } from 'uuid';
+import { randomUUID } from 'crypto';
+import type { Express } from 'express';
 
 @Injectable()
 export class FilesService {
@@ -33,7 +34,7 @@ export class FilesService {
     }
 
     try {
-      const fileId = uuidv4();
+      const fileId = randomUUID();
       const fileExtension = path.extname(file.originalname);
       const fileName = `${fileId}${fileExtension}`;
       const filePath = path.join(this.uploadDir, fileName);
