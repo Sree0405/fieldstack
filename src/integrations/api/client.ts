@@ -3,7 +3,8 @@
  * Communicates with the NestJS backend (http://localhost:4000)
  */
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://fieldstack.onrender.com/api/';
+const API_BASE_URL = import.meta.env.VITE_API_URL || 
+  (import.meta.env.DEV ? 'http://localhost:4000/api' : '/api');
 
 interface ApiResponse<T> {
   data?: T;
@@ -89,6 +90,7 @@ class ApiClient {
     }
 
     try {
+      console.log(`[API] ${options.method || 'GET'} ${url}`);
       const response = await fetch(url, {
         ...options,
         headers,
@@ -97,7 +99,6 @@ class ApiClient {
       if (!response.ok) {
         if (response.status === 401) {
           this.clearTokens();
-          console.log(response)
           throw new Error('Unauthorized - please log in again');
         }
 
@@ -108,6 +109,7 @@ class ApiClient {
       const data = await response.json();
       return { data };
     } catch (error: any) {
+      console.error(`[API] Error:`, error.message);
       return {
         error: {
           message: error.message || 'Unknown error occurred',
@@ -129,7 +131,7 @@ class ApiClient {
   }
 
   async login(credentials: LoginRequest): Promise<ApiResponse<LoginResponse>> {
-    const response = await this.request<LoginResponse>('/auth/login', {
+    const response = await this.request<LoginResponse>('/api/auth/login', {
       method: 'POST',
       body: JSON.stringify(credentials),
     });
@@ -147,7 +149,7 @@ class ApiClient {
     displayName: string;
     role?: string;
   }): Promise<ApiResponse<LoginResponse>> {
-    const response = await this.request<LoginResponse>('/auth/register', {
+    const response = await this.request<LoginResponse>('/api/auth/register', {
       method: 'POST',
       body: JSON.stringify(data),
     });
@@ -355,7 +357,7 @@ class ApiClient {
     const formData = new FormData();
     formData.append('file', file);
 
-    const url = `${API_BASE_URL}/api/files`;
+    const url = `${API_BASE_URL}/files`;
     const headers: HeadersInit = {};
 
     if (this.accessToken) {
@@ -394,7 +396,7 @@ class ApiClient {
       formData.append('files', file);
     });
 
-    const url = `${API_BASE_URL}/api/files/multiple`;
+    const url = `${API_BASE_URL}/files/multiple`;
     const headers: HeadersInit = {};
 
     if (this.accessToken) {
@@ -428,7 +430,7 @@ class ApiClient {
    * Get file metadata
    */
   async getFile(fileId: string): Promise<ApiResponse<any>> {
-    return this.request(`/api/files/${fileId}`, {
+    return this.request(`/files/${fileId}`, {
       method: 'GET',
     });
   }
@@ -440,7 +442,7 @@ class ApiClient {
     limit: number = 50,
     offset: number = 0
   ): Promise<ApiResponse<any>> {
-    return this.request(`/api/files?limit=${limit}&offset=${offset}`, {
+    return this.request(`/files?limit=${limit}&offset=${offset}`, {
       method: 'GET',
     });
   }
@@ -449,7 +451,7 @@ class ApiClient {
    * Delete file
    */
   async deleteFile(fileId: string): Promise<ApiResponse<any>> {
-    return this.request(`/api/files/${fileId}`, {
+    return this.request(`/files/${fileId}`, {
       method: 'DELETE',
     });
   }
@@ -470,7 +472,7 @@ class ApiClient {
    * Get site info
    */
   async getSiteInfo(): Promise<ApiResponse<any>> {
-    return this.request('/api/site-info', {
+    return this.request('/site-info', {
       method: 'GET',
     });
   }
@@ -488,7 +490,7 @@ class ApiClient {
     socialLinks?: any;
     metadata?: any;
   }): Promise<ApiResponse<any>> {
-    return this.request('/api/site-info', {
+    return this.request('/site-info', {
       method: 'PATCH',
       body: JSON.stringify(data),
     });
@@ -498,7 +500,7 @@ class ApiClient {
    * Update site logo
    */
   async updateSiteLogo(logoId: string): Promise<ApiResponse<any>> {
-    return this.request('/api/site-info', {
+    return this.request('/site-info', {
       method: 'PATCH',
       body: JSON.stringify({ logoId }),
     });
@@ -508,7 +510,7 @@ class ApiClient {
    * Update site favicon
    */
   async updateSiteFavicon(faviconId: string): Promise<ApiResponse<any>> {
-    return this.request('/api/site-info', {
+    return this.request('/site-info', {
       method: 'PATCH',
       body: JSON.stringify({ faviconId }),
     });
