@@ -31,7 +31,16 @@ let CrudService = class CrudService {
         try {
             // Query dynamic table with pagination
             const offset = (page - 1) * limit;
-            const query = `SELECT * FROM "${collection.tableName}" ORDER BY created_at DESC LIMIT ${limit} OFFSET ${offset}`;
+            // Explicitly list columns to avoid "cached plan must not change result type" errors
+            const columnNames = collection.fields.map((f) => `"${f.dbColumn}"`);
+            if (!columnNames.includes('"id"'))
+                columnNames.unshift('"id"');
+            if (!columnNames.includes('"created_at"'))
+                columnNames.push('"created_at"');
+            if (!columnNames.includes('"updated_at"'))
+                columnNames.push('"updated_at"');
+            const selectClause = columnNames.join(', ');
+            const query = `SELECT ${selectClause} FROM "${collection.tableName}" ORDER BY created_at DESC LIMIT ${limit} OFFSET ${offset}`;
             const countQuery = `SELECT COUNT(*) as total FROM "${collection.tableName}"`;
             const data = await this.prisma.$queryRawUnsafe(query);
             const countResult = await this.prisma.$queryRawUnsafe(countQuery);
@@ -80,12 +89,22 @@ let CrudService = class CrudService {
     async getOne(collectionName, id) {
         const collection = await this.prisma.collection.findUnique({
             where: { name: collectionName },
+            include: { fields: true },
         });
         if (!collection) {
             throw new common_1.NotFoundException('Collection not found');
         }
         try {
-            const query = `SELECT * FROM "${collection.tableName}" WHERE id = $1`;
+            // Explicitly list columns
+            const columnNames = collection.fields.map((f) => `"${f.dbColumn}"`);
+            if (!columnNames.includes('"id"'))
+                columnNames.unshift('"id"');
+            if (!columnNames.includes('"created_at"'))
+                columnNames.push('"created_at"');
+            if (!columnNames.includes('"updated_at"'))
+                columnNames.push('"updated_at"');
+            const selectClause = columnNames.join(', ');
+            const query = `SELECT ${selectClause} FROM "${collection.tableName}" WHERE id = $1::uuid`;
             const result = await this.prisma.$queryRawUnsafe(query, id);
             if (!result || result.length === 0) {
                 throw new common_1.NotFoundException('Record not found');
@@ -219,7 +238,7 @@ let CrudService = class CrudService {
             const dataEntries = Object.entries(cleanData);
             if (dataEntries.length === 0) {
                 // If no data to update, just return current record
-                const query = `SELECT * FROM "${collection.tableName}" WHERE id = $1`;
+                const query = `SELECT * FROM "${collection.tableName}" WHERE id = $1::uuid`;
                 const result = await this.prisma.$queryRawUnsafe(query, id);
                 if (!result || result.length === 0) {
                     throw new common_1.NotFoundException('Record not found');
@@ -238,7 +257,7 @@ let CrudService = class CrudService {
             })
                 .join(',');
             const vals = dataEntries.map(([_, v]) => v);
-            const query = `UPDATE "${collection.tableName}" SET ${updates}, updated_at = NOW() WHERE id = $${vals.length + 1} RETURNING *`;
+            const query = `UPDATE "${collection.tableName}" SET ${updates}, updated_at = NOW() WHERE id = $${vals.length + 1}::uuid RETURNING *`;
             const result = await this.prisma.$queryRawUnsafe(query, ...vals, id);
             if (!result || result.length === 0) {
                 throw new common_1.NotFoundException('Record not found');
@@ -272,10 +291,10 @@ let CrudService = class CrudService {
         }
         try {
             // Get record title before deleting
-            const getQuery = `SELECT * FROM "${collection.tableName}" WHERE id = $1`;
+            const getQuery = `SELECT * FROM "${collection.tableName}" WHERE id = $1::uuid`;
             const getResult = await this.prisma.$queryRawUnsafe(getQuery, id);
             const recordTitle = getResult?.[0]?.title || getResult?.[0]?.name || undefined;
-            const query = `DELETE FROM "${collection.tableName}" WHERE id = $1`;
+            const query = `DELETE FROM "${collection.tableName}" WHERE id = $1::uuid`;
             await this.prisma.$queryRawUnsafe(query, id);
             // Notify user
             if (userId) {

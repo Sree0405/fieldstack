@@ -54,6 +54,16 @@ let SystemService = class SystemService {
             fields: collection.fields,
         };
     }
+    async getCollectionFields(collectionId) {
+        const collection = await this.prisma.collection.findUnique({
+            where: { id: collectionId },
+            include: { fields: true },
+        });
+        if (!collection) {
+            throw new Error(`Collection ${collectionId} not found`);
+        }
+        return collection.fields;
+    }
     async getEndpoints() {
         const collections = await this.prisma.collection.findMany({
             include: { fields: true },

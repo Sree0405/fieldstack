@@ -11,20 +11,7 @@ import { JwtAuthGuard } from '../auth/guards/jwt.guard';
 import { SystemService } from './system.service';
 import { SiteInfoService } from '../site-info/site-info.service';
 
-// DTOs
-class CreateFieldDto {
-  name!: string;
-  dbColumn?: string;
-  type!: 'TEXT' | 'NUMBER' | 'BOOLEAN' | 'DATETIME' | 'FILE' | 'RELATION';
-  required?: boolean;
-  defaultValue?: string;
-  uiComponent?: string;
-}
-
-class UpdateCollectionSchemaDto {
-  displayName?: string;
-  fields?: CreateFieldDto[];
-}
+import { CreateFieldDto, UpdateCollectionSchemaDto } from './dto/system.dto';
 
 @Controller('system')
 @UseGuards(JwtAuthGuard)
@@ -55,6 +42,11 @@ export class SystemController {
     @Body() createFieldDto: CreateFieldDto,
   ) {
     return this.systemService.addFieldToCollection(collectionId, createFieldDto);
+  }
+
+  @Get('collections/:collectionId/fields')
+  async getCollectionFields(@Param('collectionId') collectionId: string) {
+    return this.systemService.getCollectionFields(collectionId);
   }
 
   @Patch('collections/:collectionId')

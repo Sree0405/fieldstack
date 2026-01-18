@@ -62,13 +62,13 @@ export default function Content() {
     try {
       const collectionId = selectedCollection.id;
       console.log(`Fetching records for collection: ${collectionId}`);
-      
+
       const response = await apiClient.getCrudData(
         collectionId,
         page.toString(),
         limit.toString()
       );
-      
+
       if (response.data) {
         const data = Array.isArray(response.data) ? response.data : response.data.data || [];
         setRecords(data);
@@ -93,11 +93,12 @@ export default function Content() {
       return;
     }
 
-    // Validate required fields
+    // Validate required fields (skipping auto-managed system fields)
+    const systemFields = ['id', 'created_at', 'updated_at', 'deleted_at', 'version'];
     const emptyRequired = selectedCollection.fields.some(
-      (field: any) => field.required && !newRecord[field.name]
+      (field: any) => field.required && !systemFields.includes(field.name) && !newRecord[field.name]
     );
-    
+
     if (emptyRequired) {
       toast.error('Please fill in all required fields');
       return;
@@ -106,21 +107,24 @@ export default function Content() {
     try {
       setIsCreating(true);
       const loadingToast = toast.loading('Creating record...');
-      
-      const recordToSubmit: any = {};
+
+      const recordToSubmit: any = {
+
+      };
+
       selectedCollection.fields.forEach((field: any) => {
         if (!['id', 'created_at', 'updated_at', 'deleted_at', 'version'].includes(field.name)) {
           recordToSubmit[field.name] = newRecord[field.name] || null;
         }
       });
-      
+
       console.log('Submitting record for collection:', selectedCollection.id, recordToSubmit);
-      
+
       const response = await apiClient.createCrudItem(
         selectedCollection.id,
         recordToSubmit
       );
-      
+
       if (response.error) {
         toast.dismiss(loadingToast);
         toast.error(`Failed to create record: ${response.error.message}`);
@@ -154,7 +158,10 @@ export default function Content() {
       setIsUpdating(true);
       const loadingToast = toast.loading('Updating record...');
 
-      const updateData: any = {};
+      const updateData: any = {
+        updated_at: new Date().toISOString()
+      };
+
       selectedCollection.fields.forEach((field: any) => {
         if (!['id', 'created_at', 'updated_at', 'deleted_at', 'version'].includes(field.name)) {
           updateData[field.name] = editingRecord[field.name] || null;
@@ -194,12 +201,12 @@ export default function Content() {
     try {
       setIsDeleting(true);
       const loadingToast = toast.loading('Deleting record...');
-      
+
       const response = await apiClient.deleteCrudItem(
         selectedCollection.id,
         id
       );
-      
+
       if (response.error) {
         toast.dismiss(loadingToast);
         toast.error(`Failed to delete record: ${response.error.message}`);

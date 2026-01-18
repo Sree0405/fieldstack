@@ -11,7 +11,7 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.CollectionsService = void 0;
 const common_1 = require("@nestjs/common");
-const prisma_service_1 = require("../prisma/prisma.service");
+const prisma_service_1 = require("..//prisma/prisma.service");
 const client_1 = require("@prisma/client");
 const field_types_1 = require("./field-types");
 let CollectionsService = class CollectionsService {
@@ -65,7 +65,7 @@ let CollectionsService = class CollectionsService {
                     fields: {
                         create: (createCollectionDto.fields || []).map((field) => ({
                             name: field.name,
-                            type: field.type,
+                            type: this.normalizeFieldType(field.type),
                             dbColumn: field.dbColumn || field.name,
                             required: field.required || false,
                             metadata: { validationRules: field.validationRules || {} },
@@ -108,6 +108,7 @@ let CollectionsService = class CollectionsService {
         }
     }
     async addField(collectionId, name, type, dbColumn, required, validationRules) {
+        console.log(`[CollectionsService] addField called for collection ${collectionId}: name=${name}, type=${type}`);
         try {
             const collection = await this.prisma.collection.findUnique({
                 where: { id: collectionId },
@@ -147,10 +148,15 @@ let CollectionsService = class CollectionsService {
             });
         }
         catch (error) {
-            throw new common_1.BadRequestException(`Failed to add field: ${error.message}`);
+            console.error(`[CollectionsService] Error adding field [ERR_02]: ${error.message}`);
+            throw new common_1.BadRequestException(`Failed to add field [ERR_02]: ${error.message}`);
         }
     }
     normalizeFieldType(type) {
+        if (!type) {
+            console.warn('[CollectionsService] normalizeFieldType called with undefined/empty type, falling back to STRING');
+            return client_1.FieldType.STRING;
+        }
         const upper = type.toUpperCase();
         const map = {
             'NUMBER': client_1.FieldType.INTEGER,
@@ -161,8 +167,10 @@ let CollectionsService = class CollectionsService {
         };
         if (map[upper])
             return map[upper];
-        if (upper in client_1.FieldType)
+        // Check if it's a valid enum value directly
+        if (Object.values(client_1.FieldType).includes(upper)) {
             return upper;
+        }
         return client_1.FieldType.STRING; // Fallback
     }
     async updateField(collectionId, fieldId, updateData) {

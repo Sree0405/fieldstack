@@ -2,19 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CollectionsService } from '../collections/collections.service';
 
-interface CreateFieldDto {
-  name: string;
-  dbColumn?: string;
-  type: 'TEXT' | 'NUMBER' | 'BOOLEAN' | 'DATETIME' | 'FILE' | 'RELATION';
-  required?: boolean;
-  defaultValue?: string;
-  uiComponent?: string;
-}
-
-interface UpdateCollectionSchemaDto {
-  displayName?: string;
-  fields?: CreateFieldDto[];
-}
+import { CreateFieldDto, UpdateCollectionSchemaDto } from './dto/system.dto';
 
 @Injectable()
 export class SystemService {
@@ -78,6 +66,19 @@ export class SystemService {
       tableName: collection.tableName,
       fields: collection.fields,
     };
+  }
+
+  async getCollectionFields(collectionId: string) {
+    const collection = await this.prisma.collection.findUnique({
+      where: { id: collectionId },
+      include: { fields: true },
+    });
+
+    if (!collection) {
+      throw new Error(`Collection ${collectionId} not found`);
+    }
+
+    return collection.fields;
   }
 
   async getEndpoints() {

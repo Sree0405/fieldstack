@@ -33,13 +33,31 @@ let RecordsService = class RecordsService {
      */
     async getRecords(collectionId, page = 1, limit = 25) {
         try {
-            const tableName = await this.getTableName(collectionId);
+            const collection = await this.prisma.collection.findUnique({
+                where: { id: collectionId },
+                include: { fields: true },
+            });
+            if (!collection) {
+                throw new common_1.NotFoundException(`Collection with id "${collectionId}" not found`);
+            }
+            const tableName = collection.tableName;
+            const fields = collection.fields;
             const offset = (page - 1) * limit;
-            // Get total count - SINGLE STATEMENT
+            // Explicitly list columns to avoid "cached plan must not change result type" errors after ALTER TABLE
+            const columnNames = fields.map(f => `"${f.dbColumn}"`);
+            // Always include system fields if not in metadata
+            if (!columnNames.includes('"id"'))
+                columnNames.unshift('"id"');
+            if (!columnNames.includes('"created_at"'))
+                columnNames.push('"created_at"');
+            if (!columnNames.includes('"updated_at"'))
+                columnNames.push('"updated_at"');
+            const selectClause = columnNames.join(', ');
+            // Get total count
             const countResult = await this.prisma.$queryRawUnsafe(`SELECT COUNT(*) as count FROM "${tableName}"`);
             const total = parseInt(countResult[0]?.count || '0');
-            // Get paginated records - SINGLE STATEMENT
-            const data = await this.prisma.$queryRawUnsafe(`SELECT * FROM "${tableName}" ORDER BY created_at DESC LIMIT $1 OFFSET $2`, limit, offset);
+            // Get paginated records with explicit columns
+            const data = await this.prisma.$queryRawUnsafe(`SELECT ${selectClause} FROM "${tableName}" ORDER BY created_at DESC LIMIT $1 OFFSET $2`, limit, offset);
             return {
                 data: data || [],
                 total,
@@ -56,47 +74,108 @@ let RecordsService = class RecordsService {
      * Create a record in a collection table
      */
     async createRecord(collectionId, data) {
+        console.log(`[RecordsService] createRecord for ${collectionId}`, data);
         try {
-            const tableName = await this.getTableName(collectionId);
-            const columns = Object.keys(data);
-            const values = Object.values(data);
-            const placeholders = columns.map((_, i) => `$${i + 1}`).join(', ');
-            const columnList = columns.map((col) => `"${col}"`).join(', ');
+            const collection = await this.prisma.collection.findUnique({
+                where: { id: collectionId },
+                include: { fields: true },
+            });
+            if (!collection) {
+                throw new common_1.NotFoundException(`Collection with id "${collectionId}" not found`);
+            }
+            const tableName = collection.tableName;
+            const fields = collection.fields;
+            const columnsToInsert = [];
+            const valuesToInsert = [];
+            const placeholders = [];
+            // Map incoming data to database columns
+            fields.forEach((field) => {
+                const val = data[field.name];
+                if (val !== undefined) {
+                    columnsToInsert.push(`"${field.dbColumn}"`);
+                    valuesToInsert.push(val);
+                    placeholders.push(`$${valuesToInsert.length}`);
+                }
+            });
+            // Handle system timestamps if not already mapped from user fields
+            if (!columnsToInsert.includes('"created_at"')) {
+                columnsToInsert.push('"created_at"');
+                const timestamp = data['created_at'] || new Date().toISOString();
+                valuesToInsert.push(timestamp);
+                placeholders.push(`$${valuesToInsert.length}`);
+            }
+            if (!columnsToInsert.includes('"updated_at"')) {
+                columnsToInsert.push('"updated_at"');
+                const timestamp = data['updated_at'] || new Date().toISOString();
+                valuesToInsert.push(timestamp);
+                placeholders.push(`$${valuesToInsert.length}`);
+            }
             const query = `
-        INSERT INTO "${tableName}" (${columnList}, created_at, updated_at)
-        VALUES (${placeholders}, NOW(), NOW())
+        INSERT INTO "${tableName}" (${columnsToInsert.join(', ')})
+        VALUES (${placeholders.join(', ')})
         RETURNING *
       `;
-            const result = await this.prisma.$queryRawUnsafe(query, ...values);
+            console.log(`[RecordsService] Executing INSERT on ${tableName}`);
+            const result = await this.prisma.$queryRawUnsafe(query, ...valuesToInsert);
             return result[0];
         }
         catch (error) {
-            throw new common_1.BadRequestException(`Failed to create record: ${error.message}`);
+            console.error(`[RecordsService] Create Error: ${error.message}`);
+            throw new common_1.BadRequestException(`Failed to create record [ERR_CREATE]: ${error.message}`);
         }
     }
     /**
      * Update a record in a collection table
      */
     async updateRecord(collectionId, recordId, data) {
+        console.log(`[RecordsService] updateRecord for ${collectionId}/${recordId}`, data);
         try {
-            const tableName = await this.getTableName(collectionId);
-            const entries = Object.entries(data);
-            const setClause = entries.map((_, i) => `"${entries[i][0]}" = $${i + 1}`).join(', ');
-            const values = [...Object.values(data), recordId];
+            const collection = await this.prisma.collection.findUnique({
+                where: { id: collectionId },
+                include: { fields: true },
+            });
+            if (!collection) {
+                throw new common_1.NotFoundException(`Collection with id "${collectionId}" not found`);
+            }
+            const tableName = collection.tableName;
+            const fields = collection.fields;
+            const setClauses = [];
+            const valuesToUpdate = [];
+            // Map incoming data to database columns
+            fields.forEach((field) => {
+                const val = data[field.name];
+                if (val !== undefined && field.name !== 'id') {
+                    valuesToUpdate.push(val);
+                    setClauses.push(`"${field.dbColumn}" = $${valuesToUpdate.length}`);
+                }
+            });
+            // Handle updated_at automatically if not already mapped
+            if (!setClauses.some(c => c.includes('"updated_at"'))) {
+                const timestamp = data['updated_at'] || new Date().toISOString();
+                valuesToUpdate.push(timestamp);
+                setClauses.push(`"updated_at" = $${valuesToUpdate.length}`);
+            }
+            if (setClauses.length === 0) {
+                return this.prisma.$queryRawUnsafe(`SELECT * FROM "${tableName}" WHERE id = $1::uuid`, recordId);
+            }
+            // Add recordId as the last parameter
+            valuesToUpdate.push(recordId);
             const query = `
         UPDATE "${tableName}"
-        SET ${setClause}, updated_at = NOW()
-        WHERE id = $${values.length}
+        SET ${setClauses.join(', ')}
+        WHERE id = $${valuesToUpdate.length}::uuid
         RETURNING *
       `;
-            const result = await this.prisma.$queryRawUnsafe(query, ...values);
+            console.log(`[RecordsService] Executing UPDATE on ${tableName}`);
+            const result = await this.prisma.$queryRawUnsafe(query, ...valuesToUpdate);
             if (!result || result.length === 0) {
                 throw new common_1.NotFoundException(`Record with id "${recordId}" not found`);
             }
             return result[0];
         }
         catch (error) {
-            throw new common_1.BadRequestException(`Failed to update record: ${error.message}`);
+            console.error(`[RecordsService] Update Error: ${error.message}`);
+            throw new common_1.BadRequestException(`Failed to update record [ERR_UPDATE]: ${error.message}`);
         }
     }
     /**
@@ -105,7 +184,7 @@ let RecordsService = class RecordsService {
     async deleteRecord(collectionId, recordId) {
         try {
             const tableName = await this.getTableName(collectionId);
-            const result = await this.prisma.$queryRawUnsafe(`DELETE FROM "${tableName}" WHERE id = $1 RETURNING *`, recordId);
+            const result = await this.prisma.$queryRawUnsafe(`DELETE FROM "${tableName}" WHERE id = $1::uuid RETURNING *`, recordId);
             if (!result || result.length === 0) {
                 throw new common_1.NotFoundException(`Record with id "${recordId}" not found`);
             }

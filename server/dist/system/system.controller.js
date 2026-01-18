@@ -17,11 +17,7 @@ const common_1 = require("@nestjs/common");
 const jwt_guard_1 = require("../auth/guards/jwt.guard");
 const system_service_1 = require("./system.service");
 const site_info_service_1 = require("../site-info/site-info.service");
-// DTOs
-class CreateFieldDto {
-}
-class UpdateCollectionSchemaDto {
-}
+const system_dto_1 = require("./dto/system.dto");
 let SystemController = class SystemController {
     constructor(systemService, siteInfoService) {
         this.systemService = systemService;
@@ -38,6 +34,9 @@ let SystemController = class SystemController {
     }
     async addFieldToCollection(collectionId, createFieldDto) {
         return this.systemService.addFieldToCollection(collectionId, createFieldDto);
+    }
+    async getCollectionFields(collectionId) {
+        return this.systemService.getCollectionFields(collectionId);
     }
     async updateCollectionSchema(collectionId, updateDto) {
         return this.systemService.updateCollectionSchema(collectionId, updateDto);
@@ -74,15 +73,22 @@ __decorate([
     __param(0, (0, common_1.Param)('collectionId')),
     __param(1, (0, common_1.Body)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String, CreateFieldDto]),
+    __metadata("design:paramtypes", [String, system_dto_1.CreateFieldDto]),
     __metadata("design:returntype", Promise)
 ], SystemController.prototype, "addFieldToCollection", null);
+__decorate([
+    (0, common_1.Get)('collections/:collectionId/fields'),
+    __param(0, (0, common_1.Param)('collectionId')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String]),
+    __metadata("design:returntype", Promise)
+], SystemController.prototype, "getCollectionFields", null);
 __decorate([
     (0, common_1.Patch)('collections/:collectionId'),
     __param(0, (0, common_1.Param)('collectionId')),
     __param(1, (0, common_1.Body)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String, UpdateCollectionSchemaDto]),
+    __metadata("design:paramtypes", [String, system_dto_1.UpdateCollectionSchemaDto]),
     __metadata("design:returntype", Promise)
 ], SystemController.prototype, "updateCollectionSchema", null);
 __decorate([

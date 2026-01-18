@@ -73,7 +73,6 @@ export default function CollectionBuilder() {
         type: newFieldType,
         required: newFieldRequired,
       });
-
       // Refresh selected collection
       const response = await apiClient.getCollectionSchema(selectedCollection.id);
       setSelectedCollection(response.data);
@@ -81,7 +80,8 @@ export default function CollectionBuilder() {
       setNewFieldType('TEXT');
       setNewFieldRequired(false);
     } catch (error) {
-      console.error('Failed to add field:', error);
+      console.error('Failed to add field yyy:', error);
+      console.log(error);
       alert('Failed to add field');
     }
   };

@@ -63,7 +63,7 @@ export class CollectionsService {
           fields: {
             create: (createCollectionDto.fields || []).map((field: any) => ({
               name: field.name,
-              type: field.type,
+              type: this.normalizeFieldType(field.type) as any,
               dbColumn: field.dbColumn || field.name,
               required: field.required || false,
               metadata: { validationRules: field.validationRules || {} },
@@ -111,6 +111,7 @@ export class CollectionsService {
   }
 
   async addField(collectionId: string, name: string, type: string, dbColumn?: string, required?: boolean, validationRules?: any) {
+    console.log(`[CollectionsService] addField called for collection ${collectionId}: name=${name}, type=${type}`);
     try {
       const collection = await this.prisma.collection.findUnique({
         where: { id: collectionId },
@@ -145,7 +146,7 @@ export class CollectionsService {
         return tx.field.create({
           data: {
             name,
-            type: normalizedType,
+            type: normalizedType as any,
             dbColumn: columnName,
             required: required || false,
             metadata: { validationRules: validationRules || {} },
@@ -154,11 +155,16 @@ export class CollectionsService {
         });
       });
     } catch (error: any) {
-      throw new BadRequestException(`Failed to add field: ${error.message}`);
+      console.error(`[CollectionsService] Error adding field [ERR_02]: ${error.message}`);
+      throw new BadRequestException(`Failed to add field [ERR_02]: ${error.message}`);
     }
   }
 
   private normalizeFieldType(type: string): FieldType {
+    if (!type) {
+      console.warn('[CollectionsService] normalizeFieldType called with undefined/empty type, falling back to STRING');
+      return FieldType.STRING;
+    }
     const upper = type.toUpperCase();
     const map: Record<string, FieldType> = {
       'NUMBER': FieldType.INTEGER,
@@ -169,7 +175,11 @@ export class CollectionsService {
     };
 
     if (map[upper]) return map[upper];
-    if (upper in FieldType) return upper as FieldType;
+
+    // Check if it's a valid enum value directly
+    if (Object.values(FieldType).includes(upper as any)) {
+      return upper as FieldType;
+    }
 
     return FieldType.STRING; // Fallback
   }
