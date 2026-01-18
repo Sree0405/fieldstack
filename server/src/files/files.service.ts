@@ -8,7 +8,7 @@ import type { Express } from 'express';
 @Injectable()
 export class FilesService {
   private readonly uploadDir = path.join(process.cwd(), 'uploads', 'files');
-  private readonly assetBaseUrl = '/assets';
+  private readonly assetBaseUrl = '/api/assets';
 
   constructor(private prisma: PrismaService) {
     this.ensureUploadDir();
@@ -100,7 +100,7 @@ export class FilesService {
   }
 
   /**
-   * Serve file content
+   * Serve file content (Buffer) - Deprecated, use getFileStream
    */
   async serveFile(fileId: string): Promise<Buffer> {
     const file = await this.getFileById(fileId);
@@ -109,6 +109,22 @@ export class FilesService {
       const filePath = path.join(process.cwd(), file.path);
       const fileContent = await fs.readFile(filePath);
       return fileContent;
+    } catch (error) {
+      throw new NotFoundException('File not found on disk');
+    }
+  }
+
+  /**
+   * Get file stream
+   */
+  async getFileStream(fileId: string) {
+    const file = await this.getFileById(fileId);
+    const filePath = path.join(process.cwd(), file.path);
+
+    try {
+      await fs.access(filePath);
+      const { createReadStream } = await import('fs');
+      return createReadStream(filePath);
     } catch (error) {
       throw new NotFoundException('File not found on disk');
     }

@@ -8,11 +8,17 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import fieldStack from '../../public/FieldStack_logo.svg';
+import fieldStackIcon from '../../public/FieldStack_logo.svg';
 import Waves from '@/components/Waves';
+import { useSettings } from '@/contexts/SettingsContext';
+
 export default function Auth() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
+  const { settings, getLoginLogoUrl, getLoginTitle } = useSettings();
+
+  const siteName = getLoginTitle();
+  const logoUrl = getLoginLogoUrl() || fieldStackIcon;
 
   // Login state
   const [email, setEmail] = useState('admin@fieldstack.local');
@@ -76,49 +82,49 @@ export default function Auth() {
         yGap={42}
       />
 
-<div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_rgba(124,58,237,0.25),_transparent_60%)]" />
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_rgba(124,58,237,0.25),_transparent_60%)]" />
 
       {/* Main Container */}
       <div className="relative z-10 flex min-h-screen">
         {/* LEFT PANEL */}
-<div className="hidden lg:flex w-1/2 flex-col justify-center px-20 text-white">
-  <div className="max-w-md space-y-8">
-    <div className="flex items-center gap-3 animate-fade-down">
-      <div className="h-12 w-12 rounded-xl bg-purple-600/30 border border-purple-500/40 flex items-center justify-center text-2xl shadow-lg shadow-purple-500/30">
-        <img src={fieldStack} alt="Fieldstack Logo" className="h-8 w-8" />
-      </div>
-      <h1 className="text-3xl font-semibold tracking-tight">fieldstack</h1>
-    </div>
+        <div className="hidden lg:flex w-1/2 flex-col justify-center px-20 text-white">
+          <div className="max-w-md space-y-8">
+            <div className="flex items-center gap-3 animate-fade-down">
+              <div className="h-12 w-12 rounded-xl bg-purple-600/30 border border-purple-500/40 flex items-center justify-center text-2xl shadow-lg shadow-purple-500/30">
+                <img src={logoUrl} alt={`${siteName} Logo`} className="h-8 w-8 object-contain" />
+              </div>
+              <h1 className="text-3xl font-semibold tracking-tight">{siteName}</h1>
+            </div>
 
-    <p className="text-lg text-gray-300 leading-relaxed animate-fade-up delay-100">
-      Build, manage, and scale content with a modern headless CMS designed for developers and teams.
-    </p>
+            <p className="text-lg text-gray-300 leading-relaxed animate-fade-up delay-100">
+              Build, manage, and scale content with a modern headless CMS designed for developers and teams.
+            </p>
 
-    <ul className="space-y-4 text-sm text-gray-400 animate-fade-up delay-200">
-      {[
-        'Dynamic collections & fields',
-        'Advanced role-based permissions',
-        'Auto-generated REST & GraphQL APIs',
-        'Enterprise-ready architecture'
-      ].map((text) => (
-        <li key={text} className="flex items-center gap-3">
-          <span className="h-2 w-2 rounded-full bg-purple-500 shadow shadow-purple-500/50" />
-          {text}
-        </li>
-      ))}
-    </ul>
+            <ul className="space-y-4 text-sm text-gray-400 animate-fade-up delay-200">
+              {[
+                'Dynamic collections & fields',
+                'Advanced role-based permissions',
+                'Auto-generated REST & GraphQL APIs',
+                'Enterprise-ready architecture'
+              ].map((text) => (
+                <li key={text} className="flex items-center gap-3">
+                  <span className="h-2 w-2 rounded-full bg-purple-500 shadow shadow-purple-500/50" />
+                  {text}
+                </li>
+              ))}
+            </ul>
 
-    {/* Ambient Glow */}
-    <div className="relative h-32 w-32 mt-10">
-      <div className="absolute inset-0 rounded-full bg-purple-600 blur-3xl opacity-30 animate-pulse" />
-    </div>
-  </div>
-</div>
+            {/* Ambient Glow */}
+            <div className="relative h-32 w-32 mt-10">
+              <div className="absolute inset-0 rounded-full bg-purple-600 blur-3xl opacity-30 animate-pulse" />
+            </div>
+          </div>
+        </div>
 
 
         {/* RIGHT PANEL */}
         <div className="flex w-full lg:w-1/2 items-center justify-center px-4">
-<Card className="w-full max-w-md rounded-2xl 
+          <Card className="w-full max-w-md rounded-2xl 
   border border-white/15 
   bg-white/[0.03] 
   backdrop-blur-2xl 

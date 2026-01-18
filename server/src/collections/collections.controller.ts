@@ -11,6 +11,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { CollectionsService } from './collections.service';
+import { RecordsService } from './records/records.service';
 import { FieldValidationService } from './field-validation.service';
 import { CreateCollectionDto } from './dto/create-collection.dto';
 
@@ -18,6 +19,7 @@ import { CreateCollectionDto } from './dto/create-collection.dto';
 export class CollectionsController {
   constructor(
     private collectionsService: CollectionsService,
+    private recordsService: RecordsService,
     private fieldValidation: FieldValidationService,
   ) {}
 
@@ -38,16 +40,17 @@ export class CollectionsController {
   }
 
   /**
-   * Create a new collection
+   * Create a new collection with dynamic table
    */
   @Post()
-  async create(@Body() body: CreateCollectionDto & { systemConfig?: any }, @Request() req: any) {
+  async create(@Body() body: CreateCollectionDto & { systemConfig?: any; fields?: any[] }, @Request() req: any) {
     return this.collectionsService.create(
       {
         name: body.name,
         displayName: body.displayName,
         description: body.description,
-        tableName: body.tableName || '',
+        tableName: body.tableName || body.name.toLowerCase().replace(/\s+/g, '_'),
+        fields: body.fields || [],
       },
       body.systemConfig,
       req.user?.id,
@@ -55,7 +58,7 @@ export class CollectionsController {
   }
 
   /**
-   * Delete a collection
+   * Delete a collection and its table
    */
   @Delete(':id')
   async delete(@Param('id') id: string, @Request() req: any) {

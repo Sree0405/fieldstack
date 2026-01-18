@@ -15,10 +15,12 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.CollectionsController = void 0;
 const common_1 = require("@nestjs/common");
 const collections_service_1 = require("./collections.service");
+const records_service_1 = require("./records/records.service");
 const field_validation_service_1 = require("./field-validation.service");
 let CollectionsController = class CollectionsController {
-    constructor(collectionsService, fieldValidation) {
+    constructor(collectionsService, recordsService, fieldValidation) {
         this.collectionsService = collectionsService;
+        this.recordsService = recordsService;
         this.fieldValidation = fieldValidation;
     }
     /**
@@ -34,18 +36,19 @@ let CollectionsController = class CollectionsController {
         return this.collectionsService.findOne(id);
     }
     /**
-     * Create a new collection
+     * Create a new collection with dynamic table
      */
     async create(body, req) {
         return this.collectionsService.create({
             name: body.name,
             displayName: body.displayName,
             description: body.description,
-            tableName: body.tableName || '',
+            tableName: body.tableName || body.name.toLowerCase().replace(/\s+/g, '_'),
+            fields: body.fields || [],
         }, body.systemConfig, req.user?.id);
     }
     /**
-     * Delete a collection
+     * Delete a collection and its table
      */
     async delete(id, req) {
         return this.collectionsService.delete(id, req.user?.id);
@@ -146,5 +149,6 @@ __decorate([
 exports.CollectionsController = CollectionsController = __decorate([
     (0, common_1.Controller)('collections'),
     __metadata("design:paramtypes", [collections_service_1.CollectionsService,
+        records_service_1.RecordsService,
         field_validation_service_1.FieldValidationService])
 ], CollectionsController);

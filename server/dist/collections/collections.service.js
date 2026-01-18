@@ -12,24 +12,20 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.CollectionsService = void 0;
 const common_1 = require("@nestjs/common");
 const prisma_service_1 = require("../prisma/prisma.service");
-const schema_generator_service_1 = require("./schema-generator.service");
-const field_validation_service_1 = require("./field-validation.service");
-const notifications_service_1 = require("../notifications/notifications.service");
+const client_1 = require("@prisma/client");
 const field_types_1 = require("./field-types");
 let CollectionsService = class CollectionsService {
-    constructor(prisma, schemaGenerator, fieldValidation, notificationsService) {
+    constructor(prisma) {
         this.prisma = prisma;
-        this.schemaGenerator = schemaGenerator;
-        this.fieldValidation = fieldValidation;
-        this.notificationsService = notificationsService;
     }
     async findAll() {
         return this.prisma.collection.findMany({
             include: {
                 fields: true,
-                relations: true,
             },
-            orderBy: { createdAt: 'desc' },
+            orderBy: {
+                createdAt: 'desc',
+            },
         });
     }
     async findOne(id) {
@@ -37,216 +33,259 @@ let CollectionsService = class CollectionsService {
             where: { id },
             include: {
                 fields: true,
-                relations: true,
             },
         });
         if (!collection) {
-            throw new common_1.NotFoundException('Collection not found');
+            throw new common_1.NotFoundException(`Collection with id "${id}" not found`);
         }
         return collection;
     }
     async create(createCollectionDto, systemConfig, userId) {
-        // Validate collection name
-        if (!createCollectionDto.name || createCollectionDto.name.trim().length === 0) {
-            throw new common_1.BadRequestException('Collection name is required');
-        }
-        if (!createCollectionDto.displayName || createCollectionDto.displayName.trim().length === 0) {
-            throw new common_1.BadRequestException('Display name is required');
-        }
-        // Check if collection already exists
-        const existingCollection = await this.prisma.collection.findUnique({
-            where: { name: createCollectionDto.name },
-        });
-        if (existingCollection) {
-            throw new common_1.BadRequestException(`Collection with name "${createCollectionDto.name}" already exists`);
-        }
-        // Generate table name if not provided
-        const tableName = createCollectionDto.tableName ||
-            `tbl_${createCollectionDto.name.toLowerCase().replace(/[^a-z0-9]/g, '_')}`;
-        // Create the Prisma collection metadata
-        const collection = await this.prisma.collection.create({
-            data: {
-                name: createCollectionDto.name,
-                displayName: createCollectionDto.displayName,
-                description: createCollectionDto.description,
-                tableName,
-            },
-            include: {
-                fields: true,
-            },
-        });
-        // Create the actual PostgreSQL table with system fields
         try {
-            const systemFields = this.schemaGenerator.generateSystemFields(systemConfig);
-            const systemFieldsData = systemFields.map((field) => ({
-                collectionId: collection.id,
-                name: field.name,
-                dbColumn: field.name,
-                type: field.type,
-                required: true,
-            }));
-            // Create all system fields in database
-            if (systemFieldsData.length > 0) {
-                await this.prisma.field.createMany({
-                    data: systemFieldsData,
-                });
+            // Generate table name
+            const tableName = createCollectionDto.tableName ||
+                `tbl_${createCollectionDto.name.toLowerCase().replace(/[^a-z0-9]/g, '_')}`;
+            // Check if collection with this tableName already exists
+            const existingCollection = await this.prisma.collection.findUnique({
+                where: { tableName },
+            }).catch(() => null);
+            if (existingCollection) {
+                throw new common_1.ConflictException(`Collection with table name "${tableName}" already exists`);
             }
-            const createTableSQL = this.schemaGenerator.generateCreateTableSQL(tableName, [], systemConfig);
-            await this.prisma.$executeRawUnsafe(createTableSQL);
-            console.log(`Created table: ${tableName}`);
-            // Create updated_at trigger
-            const triggerSQL = this.schemaGenerator.generateUpdatedAtTriggerSQL(tableName);
-            await this.prisma.$executeRawUnsafe(triggerSQL);
-            // Create default indexes for system fields
-            const indexesSQL = this.schemaGenerator.generateIndexesSQL(tableName, systemFields, systemConfig);
-            if (indexesSQL) {
-                await this.prisma.$executeRawUnsafe(indexesSQL);
-            }
+            // Create the dynamic table BEFORE creating the collection record
+            await this.createDynamicTable(tableName, createCollectionDto.fields || []);
+            // Create the Prisma collection metadata record
+            const collection = await this.prisma.collection.create({
+                data: {
+                    name: createCollectionDto.name,
+                    displayName: createCollectionDto.displayName,
+                    description: createCollectionDto.description,
+                    tableName,
+                    status: 'ACTIVE',
+                    fields: {
+                        create: (createCollectionDto.fields || []).map((field) => ({
+                            name: field.name,
+                            type: field.type,
+                            dbColumn: field.dbColumn || field.name,
+                            required: field.required || false,
+                            metadata: { validationRules: field.validationRules || {} },
+                        })),
+                    },
+                },
+                include: {
+                    fields: true,
+                },
+            });
+            return collection;
         }
         catch (error) {
-            console.error('Error creating table:', error);
-            throw new common_1.BadRequestException(`Failed to create collection table: ${error?.message || 'Unknown error'}`);
+            // Cleanup: drop table if collection creation failed
+            if (error.code !== 'P2002' && error.message && !error.message.includes('already exists')) {
+                const tableName = createCollectionDto.tableName ||
+                    `tbl_${createCollectionDto.name.toLowerCase().replace(/[^a-z0-9]/g, '_')}`;
+                await this.dropDynamicTable(tableName).catch(() => { });
+            }
+            throw new common_1.BadRequestException(`Failed to create collection: ${error.message}`);
         }
-        // Notify user
-        if (userId) {
-            await this.notificationsService.notifyCollectionCreated(createCollectionDto.name, userId);
-        }
-        return collection;
     }
     async delete(id, userId) {
-        const collection = await this.findOne(id);
-        // Drop the PostgreSQL table
         try {
-            const dropTableQuery = `DROP TABLE IF EXISTS "${collection.tableName}" CASCADE;`;
-            await this.prisma.$executeRawUnsafe(dropTableQuery);
-            console.log(`Dropped table: ${collection.tableName}`);
-        }
-        catch (error) {
-            console.error('Error dropping table:', error);
-            throw new common_1.BadRequestException(`Failed to delete collection table: ${error?.message || 'Unknown error'}`);
-        }
-        // Delete the Prisma collection (and related fields due to cascade)
-        const result = await this.prisma.collection.delete({
-            where: { id },
-        });
-        // Notify user
-        if (userId) {
-            await this.notificationsService.createNotification(userId, {
-                type: notifications_service_1.NotificationType.INFO,
-                title: 'Collection Deleted',
-                message: `Collection "${collection.name}" has been deleted`,
-                data: { collectionName: collection.name },
+            const collection = await this.prisma.collection.findUnique({
+                where: { id },
+            });
+            if (!collection) {
+                throw new common_1.NotFoundException(`Collection with id "${id}" not found`);
+            }
+            // Drop the dynamic table
+            await this.dropDynamicTable(collection.tableName);
+            // Delete collection metadata
+            return this.prisma.collection.delete({
+                where: { id },
             });
         }
-        return result;
+        catch (error) {
+            throw new common_1.BadRequestException(`Failed to delete collection: ${error.message}`);
+        }
     }
-    async addField(collectionId, fieldName, fieldType, dbColumn, required = false, validationRules) {
-        const collection = await this.findOne(collectionId);
-        // Validate field type
-        if (!(0, field_types_1.getPgType)(fieldType)) {
-            throw new common_1.BadRequestException(`Invalid field type: ${fieldType}`);
-        }
-        // Check if field already exists
-        const existingField = await this.prisma.field.findFirst({
-            where: {
-                collectionId,
-                name: fieldName,
-            },
-        });
-        if (existingField) {
-            throw new common_1.BadRequestException(`Field "${fieldName}" already exists in this collection`);
-        }
-        // Generate db column name
-        const finalDbColumn = dbColumn || this.toDbColumnName(fieldName);
-        // Add column to PostgreSQL table
+    async addField(collectionId, name, type, dbColumn, required, validationRules) {
         try {
-            const addColumnSQL = this.schemaGenerator.generateAddColumnSQL(collection.tableName, fieldName, fieldType, required);
-            await this.prisma.$executeRawUnsafe(addColumnSQL);
-            console.log(`Added column ${finalDbColumn} to table ${collection.tableName}`);
+            const collection = await this.prisma.collection.findUnique({
+                where: { id: collectionId },
+            });
+            if (!collection) {
+                throw new common_1.NotFoundException(`Collection with id "${collectionId}" not found`);
+            }
+            // Normalize field type to match Prisma Enum
+            const normalizedType = this.normalizeFieldType(type);
+            // Add column to dynamic table
+            const columnName = dbColumn || name;
+            // Use getPgType for consistency, fallback to mapFieldTypeToSql if needed or direct logic
+            const sqlType = (0, field_types_1.getPgType)(normalizedType) || this.mapFieldTypeToSql(normalizedType);
+            const nullable = required ? 'NOT NULL' : 'NULL';
+            const addColumnQuery = `ALTER TABLE "${collection.tableName}" ADD COLUMN IF NOT EXISTS "${columnName}" ${sqlType} ${nullable}`;
+            return await this.prisma.$transaction(async (tx) => {
+                try {
+                    await tx.$executeRawUnsafe(addColumnQuery);
+                }
+                catch (dbError) {
+                    // If column already exists, continue
+                    if (!dbError.message.includes('already exists')) {
+                        throw dbError;
+                    }
+                }
+                // Add field metadata
+                return tx.field.create({
+                    data: {
+                        name,
+                        type: normalizedType,
+                        dbColumn: columnName,
+                        required: required || false,
+                        metadata: { validationRules: validationRules || {} },
+                        collectionId,
+                    },
+                });
+            });
         }
         catch (error) {
-            console.error('Error adding column:', error);
-            throw new common_1.BadRequestException(`Failed to add field: ${error?.message || 'Unknown error'}`);
+            throw new common_1.BadRequestException(`Failed to add field: ${error.message}`);
         }
-        // Create Field record
-        const field = await this.prisma.field.create({
-            data: {
-                collectionId,
-                name: fieldName,
-                dbColumn: finalDbColumn,
-                type: fieldType.toUpperCase(),
-                required,
-            },
-        });
-        return field;
+    }
+    normalizeFieldType(type) {
+        const upper = type.toUpperCase();
+        const map = {
+            'NUMBER': client_1.FieldType.INTEGER,
+            'DATETIME': client_1.FieldType.DATETIME,
+            'BOOL': client_1.FieldType.BOOLEAN,
+            'FILE': client_1.FieldType.FILE,
+            'RELATION': client_1.FieldType.RELATION,
+        };
+        if (map[upper])
+            return map[upper];
+        if (upper in client_1.FieldType)
+            return upper;
+        return client_1.FieldType.STRING; // Fallback
     }
     async updateField(collectionId, fieldId, updateData) {
-        const field = await this.prisma.field.findUnique({
-            where: { id: fieldId },
-        });
-        if (!field || field.collectionId !== collectionId) {
-            throw new common_1.NotFoundException('Field not found');
-        }
-        const collection = await this.findOne(collectionId);
-        // If changing type, alter table
-        if (updateData.type && updateData.type !== field.type) {
-            try {
-                const modifyColumnSQL = this.schemaGenerator.generateModifyColumnSQL(collection.tableName, field.name, updateData.type);
-                await this.prisma.$executeRawUnsafe(modifyColumnSQL);
-            }
-            catch (error) {
-                console.error('Error modifying column:', error);
-                throw new common_1.BadRequestException(`Failed to update field type: ${error?.message || 'Unknown error'}`);
-            }
-        }
-        // Update field metadata
-        const updatedField = await this.prisma.field.update({
-            where: { id: fieldId },
-            data: {
-                type: updateData.type,
-                required: updateData.required,
-            },
-        });
-        return updatedField;
-    }
-    async deleteField(collectionId, fieldId) {
-        const field = await this.prisma.field.findUnique({
-            where: { id: fieldId },
-        });
-        if (!field || field.collectionId !== collectionId) {
-            throw new common_1.NotFoundException('Field not found');
-        }
-        const collection = await this.findOne(collectionId);
-        // Drop column from PostgreSQL table
         try {
-            const dropColumnSQL = this.schemaGenerator.generateDropColumnSQL(collection.tableName, field.name);
-            await this.prisma.$executeRawUnsafe(dropColumnSQL);
-            console.log(`Dropped column ${field.dbColumn} from table ${collection.tableName}`);
+            // Verify collection exists
+            await this.prisma.collection.findUnique({
+                where: { id: collectionId },
+            });
+            return this.prisma.field.update({
+                where: { id: fieldId },
+                data: updateData,
+            });
         }
         catch (error) {
-            console.error('Error dropping column:', error);
-            throw new common_1.BadRequestException(`Failed to delete field: ${error?.message || 'Unknown error'}`);
+            throw new common_1.BadRequestException(`Failed to update field: ${error.message}`);
         }
-        // Delete field record
-        return this.prisma.field.delete({
-            where: { id: fieldId },
-        });
+    }
+    async deleteField(collectionId, fieldId) {
+        try {
+            const field = await this.prisma.field.findUnique({
+                where: { id: fieldId },
+            });
+            if (!field) {
+                throw new common_1.NotFoundException(`Field with id "${fieldId}" not found`);
+            }
+            const collection = await this.prisma.collection.findUnique({
+                where: { id: collectionId },
+            });
+            if (!collection) {
+                throw new common_1.NotFoundException(`Collection with id "${collectionId}" not found`);
+            }
+            // Drop column from dynamic table - SINGLE STATEMENT ONLY
+            const dropColumnQuery = `ALTER TABLE "${collection.tableName}" DROP COLUMN IF EXISTS "${field.dbColumn}"`;
+            try {
+                await this.prisma.$executeRawUnsafe(dropColumnQuery);
+            }
+            catch (dbError) {
+                // Continue even if column doesn't exist
+                console.warn(`Column drop warning: ${dbError.message}`);
+            }
+            // Delete field metadata
+            return this.prisma.field.delete({
+                where: { id: fieldId },
+            });
+        }
+        catch (error) {
+            throw new common_1.BadRequestException(`Failed to delete field: ${error.message}`);
+        }
     }
     /**
-     * Convert field name to database column name (snake_case)
+     * Create dynamic table with separate SQL statements
+     * CRITICAL: Each $executeRawUnsafe() call must contain ONLY ONE SQL statement
      */
-    toDbColumnName(fieldName) {
-        return fieldName
-            .replace(/([a-z])([A-Z])/g, '$1_$2')
-            .replace(/([A-Z])([A-Z][a-z])/g, '$1_$2')
-            .toLowerCase();
+    async createDynamicTable(tableName, fields) {
+        try {
+            // Build columns array
+            const columns = [
+                'id UUID PRIMARY KEY DEFAULT gen_random_uuid()',
+                'created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP',
+                'updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP',
+            ];
+            // Add field columns
+            fields.forEach((field) => {
+                const sqlType = this.mapFieldTypeToSql(field.type);
+                const nullable = field.required ? 'NOT NULL' : 'NULL';
+                columns.push(`"${field.name}" ${sqlType} ${nullable}`);
+            });
+            const columnDefinitions = columns.join(', ');
+            const createTableQuery = `CREATE TABLE IF NOT EXISTS "${tableName}" (${columnDefinitions})`;
+            // Execute CREATE TABLE - SINGLE STATEMENT
+            console.log(`[DB] Executing: ${createTableQuery.substring(0, 100)}...`);
+            await this.prisma.$executeRawUnsafe(createTableQuery);
+            console.log(`✓ Created table: ${tableName}`);
+            // Create index separately - ANOTHER SINGLE STATEMENT
+            const createIndexQuery = `CREATE INDEX IF NOT EXISTS "idx_${tableName}_created_at" ON "${tableName}" (created_at DESC)`;
+            console.log(`[DB] Executing: ${createIndexQuery.substring(0, 100)}...`);
+            await this.prisma.$executeRawUnsafe(createIndexQuery);
+            console.log(`✓ Created index on ${tableName}`);
+        }
+        catch (error) {
+            console.error(`[DB Error] Failed to create table "${tableName}":`, error.message);
+            throw new Error(`Failed to create collection table: ${error.message}`);
+        }
+    }
+    /**
+     * Drop dynamic table - SINGLE STATEMENT ONLY
+     */
+    async dropDynamicTable(tableName) {
+        try {
+            const dropTableQuery = `DROP TABLE IF EXISTS "${tableName}" CASCADE`;
+            console.log(`[DB] Executing: ${dropTableQuery}`);
+            await this.prisma.$executeRawUnsafe(dropTableQuery);
+            console.log(`✓ Dropped table: ${tableName}`);
+        }
+        catch (error) {
+            console.error(`[DB Warning] Failed to drop table: ${error.message}`);
+            // Don't throw - this is cleanup
+        }
+    }
+    /**
+     * Map field types to PostgreSQL SQL types
+     */
+    mapFieldTypeToSql(fieldType) {
+        const typeMap = {
+            text: 'VARCHAR(255)',
+            email: 'VARCHAR(255)',
+            number: 'DECIMAL(10, 2)',
+            integer: 'INTEGER',
+            boolean: 'BOOLEAN',
+            date: 'DATE',
+            datetime: 'TIMESTAMP',
+            json: 'JSONB',
+            richtext: 'TEXT',
+            url: 'VARCHAR(2048)',
+            file: 'TEXT', // ID of the file
+            relation: 'UUID', // ID of the related record
+            uuid: 'UUID',
+        };
+        return typeMap[fieldType.toLowerCase()] || 'VARCHAR(255)';
     }
 };
 exports.CollectionsService = CollectionsService;
 exports.CollectionsService = CollectionsService = __decorate([
     (0, common_1.Injectable)(),
-    __metadata("design:paramtypes", [prisma_service_1.PrismaService,
-        schema_generator_service_1.SchemaGeneratorService,
-        field_validation_service_1.FieldValidationService,
-        notifications_service_1.NotificationsService])
+    __metadata("design:paramtypes", [prisma_service_1.PrismaService])
 ], CollectionsService);

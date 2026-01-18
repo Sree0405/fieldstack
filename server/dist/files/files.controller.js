@@ -50,6 +50,20 @@ let FilesController = class FilesController {
         return this.filesService.getFileById(fileId);
     }
     /**
+     * Serve file content
+     * GET /api/assets/:id
+     */
+    async serveFile(fileId, res) {
+        const file = await this.filesService.getFileById(fileId);
+        const stream = await this.filesService.getFileStream(fileId);
+        res.set({
+            'Content-Type': file.mimeType,
+            'Content-Disposition': `inline; filename="${file.originalName}"`,
+            'Content-Length': file.size.toString(),
+        });
+        return new common_1.StreamableFile(stream);
+    }
+    /**
      * Delete file
      * DELETE /api/files/:id
      */
@@ -100,6 +114,14 @@ __decorate([
     __metadata("design:returntype", Promise)
 ], FilesController.prototype, "getFile", null);
 __decorate([
+    (0, common_1.Get)('assets/:id'),
+    __param(0, (0, common_1.Param)('id')),
+    __param(1, (0, common_1.Res)({ passthrough: true })),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String, Object]),
+    __metadata("design:returntype", Promise)
+], FilesController.prototype, "serveFile", null);
+__decorate([
     (0, common_1.Delete)('files/:id'),
     __param(0, (0, common_1.Param)('id')),
     __metadata("design:type", Function),
@@ -107,6 +129,6 @@ __decorate([
     __metadata("design:returntype", Promise)
 ], FilesController.prototype, "deleteFile", null);
 exports.FilesController = FilesController = __decorate([
-    (0, common_1.Controller)('api'),
+    (0, common_1.Controller)(),
     __metadata("design:paramtypes", [files_service_1.FilesService])
 ], FilesController);

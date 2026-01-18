@@ -13,11 +13,10 @@ import {
   ChevronRight,
   Bell,
   User,
-  Files,
-  Globe,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useState ,useEffect} from "react";
+import { useState, useEffect } from "react";
+import { useSettings } from "@/contexts/SettingsContext";
 
 const navSections = [
   {
@@ -41,7 +40,6 @@ const navSections = [
       { to: "/users", icon: Users, label: "Users" },
       { to: "/roles", icon: Shield, label: "Roles & Permissions" },
       { to: "/media", icon: FileText, label: "Media Library" },
-      { to: "/file-manager", icon: Files, label: "File Manager" },
     ],
   },
   {
@@ -50,41 +48,52 @@ const navSections = [
       { to: "/notifications", icon: Bell, label: "Notifications" },
       { to: "/profile", icon: User, label: "Profile" },
       { to: "/settings", icon: Settings, label: "Settings" },
-      { to: "/site-settings", icon: Globe, label: "Site Settings" },
     ],
   },
 ];
 
 export const Sidebar = () => {
-const [collapsed, setCollapsed] = useState(true);
+  const [collapsed, setCollapsed] = useState(true);
+  const { settings, getLogoUrl } = useSettings();
 
-useEffect(() => {
-  setCollapsed(window.innerWidth < 768);
-}, []);
+  useEffect(() => {
+    setCollapsed(window.innerWidth < 768);
+  }, []);
+
+  const logoUrl = getLogoUrl();
+  const siteName = settings?.siteName || "fieldstack";
 
   return (
-<aside
-  className={cn(
-    "relative flex bg-background flex-col transition-all duration-300 sidebar-bg",
-    collapsed ? "w-20" : "w-72"
-  )}
-  style={{
-    borderRight: "1px solid rgba(255,255,255,0.08)",
-  }}
->
-
+    <aside
+      className={cn(
+        "relative flex bg-background flex-col transition-all duration-300 sidebar-bg",
+        collapsed ? "w-20" : "w-72"
+      )}
+      style={{
+        borderRight: "1px solid rgba(255,255,255,0.08)",
+      }}
+    >
       {/* Header */}
       <div className="relative flex h-16 items-center px-6 border-b border-white/5">
         {!collapsed && (
-          <span className="text-lg font-semibold tracking-wide text-[#E6E8F2]">
-            fieldstack
-          </span>
+          <div className="flex items-center gap-3">
+            {logoUrl && (
+              <img src={logoUrl} alt="Logo" className="h-8 w-8 object-contain rounded-md" />
+            )}
+            <span className="text-lg font-semibold tracking-wide text-[#E6E8F2]">
+              {siteName}
+            </span>
+          </div>
+        )}
+        {/* Helper for collapsed view if needed, or just show icon/first letter */}
+        {collapsed && logoUrl && (
+          <img src={logoUrl} alt="Logo" className="h-8 w-8 object-contain rounded-md mx-auto" />
         )}
 
         <button
           onClick={() => setCollapsed(!collapsed)}
           className="absolute -right-3 top-5 h-7 w-7 rounded-full 
-          text-white shadow-lg hover:brightness-110 transition"
+          text-white shadow-lg hover:brightness-110 transition z-50 bg-[#7C5CFF]"
         >
           {collapsed ? <ChevronRight size={16} /> : <ChevronLeft size={16} />}
         </button>
@@ -109,9 +118,8 @@ useEffect(() => {
                     cn(
                       "group relative flex items-center gap-3 rounded-md px-3 py-2.5 text-sm font-medium transition",
                       isActive
-  ? "bg-white/5 text-[#EDEAFF] shadow-[inset_0_0_0_1px_rgba(124,92,255,0.25)]"
-  : "text-[#A6A3C8] hover:bg-white/5 hover:text-[#EDEAFF]"
-
+                        ? "bg-white/5 text-[#EDEAFF] shadow-[inset_0_0_0_1px_rgba(124,92,255,0.25)]"
+                        : "text-[#A6A3C8] hover:bg-white/5 hover:text-[#EDEAFF]"
                     )
                   }
                 >

@@ -1,15 +1,14 @@
 import { Module } from '@nestjs/common';
 import { CollectionsController } from './collections.controller';
 import { CollectionsService } from './collections.service';
-import { SchemaGeneratorService } from './schema-generator.service';
 import { FieldValidationService } from './field-validation.service';
-import { PrismaModule } from '../prisma/prisma.module';
-import { NotificationsModule } from '../notifications/notifications.module';
+import { RecordsModule } from './records/records.module';
+import { PrismaModule } from '@/prisma/prisma.module';
 
 @Module({
-  imports: [PrismaModule, NotificationsModule],
+  imports: [PrismaModule, RecordsModule],
   controllers: [CollectionsController],
-  providers: [CollectionsService, SchemaGeneratorService, FieldValidationService],
-  exports: [CollectionsService, SchemaGeneratorService, FieldValidationService],
+  providers: [CollectionsService, FieldValidationService],
+  exports: [CollectionsService, RecordsModule],
 })
 export class CollectionsModule {}

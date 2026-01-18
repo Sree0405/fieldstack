@@ -1,4 +1,4 @@
-import { IsString, IsNotEmpty, IsOptional } from 'class-validator';
+import { IsString, IsNotEmpty, IsOptional, IsArray } from 'class-validator';
 
 export class CreateCollectionDto {
   @IsString()
@@ -16,4 +16,8 @@ export class CreateCollectionDto {
   @IsString()
   @IsOptional()
   tableName?: string;
+
+  @IsArray()
+  @IsOptional()
+  fields?: any[];
 }

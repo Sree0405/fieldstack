@@ -60,16 +60,21 @@ export default function Content() {
   const fetchRecords = async () => {
     if (!selectedCollection) return;
     try {
+      const collectionId = selectedCollection.id;
+      console.log(`Fetching records for collection: ${collectionId}`);
+      
       const response = await apiClient.getCrudData(
-        selectedCollection.name,
+        collectionId,
         page.toString(),
         limit.toString()
       );
+      
       if (response.data) {
-        setRecords(response.data.data || []);
-        setTotal(response.data.total || 0);
+        const data = Array.isArray(response.data) ? response.data : response.data.data || [];
+        setRecords(data);
+        setTotal(response.data.total || data.length || 0);
       } else if (response.error) {
-        
+        console.error('Fetch error:', response.error);
         toast.error(`Failed to load records: ${response.error.message}`);
         setRecords([]);
         setTotal(0);
@@ -77,6 +82,8 @@ export default function Content() {
     } catch (error: any) {
       console.error('Failed to fetch records:', error);
       toast.error('Failed to load records');
+      setRecords([]);
+      setTotal(0);
     }
   };
 
@@ -86,17 +93,33 @@ export default function Content() {
       return;
     }
 
+    // Validate required fields
+    const emptyRequired = selectedCollection.fields.some(
+      (field: any) => field.required && !newRecord[field.name]
+    );
+    
+    if (emptyRequired) {
+      toast.error('Please fill in all required fields');
+      return;
+    }
+
     try {
       setIsCreating(true);
       const loadingToast = toast.loading('Creating record...');
       
-      // Map field names to dbColumn for database storage
-      const recordToSubmit = {};
-      for (const [key, value] of Object.entries(newRecord)) {
-        recordToSubmit[key] = value;
-      }
+      const recordToSubmit: any = {};
+      selectedCollection.fields.forEach((field: any) => {
+        if (!['id', 'created_at', 'updated_at', 'deleted_at', 'version'].includes(field.name)) {
+          recordToSubmit[field.name] = newRecord[field.name] || null;
+        }
+      });
       
-      const response = await apiClient.createCrudItem(selectedCollection.name, recordToSubmit);
+      console.log('Submitting record for collection:', selectedCollection.id, recordToSubmit);
+      
+      const response = await apiClient.createCrudItem(
+        selectedCollection.id,
+        recordToSubmit
+      );
       
       if (response.error) {
         toast.dismiss(loadingToast);
@@ -107,10 +130,9 @@ export default function Content() {
         toast.success('Record created successfully!');
         setShowNewDialog(false);
         setNewRecord({});
-        fetchRecords();
+        await fetchRecords();
       }
     } catch (error: any) {
-      console.error('Failed to create record:', error);
       toast.error(error.message || 'Failed to create record');
     } finally {
       setIsCreating(false);
@@ -132,15 +154,17 @@ export default function Content() {
       setIsUpdating(true);
       const loadingToast = toast.loading('Updating record...');
 
-      // Prepare update data - exclude system fields
-      const updateData = { ...editingRecord };
-      delete updateData.id;
-      delete updateData.created_at;
-      delete updateData.updated_at;
-      delete updateData.deleted_at;
+      const updateData: any = {};
+      selectedCollection.fields.forEach((field: any) => {
+        if (!['id', 'created_at', 'updated_at', 'deleted_at', 'version'].includes(field.name)) {
+          updateData[field.name] = editingRecord[field.name] || null;
+        }
+      });
+
+      console.log('Updating record in collection:', selectedCollection.id, updateData);
 
       const response = await apiClient.updateCrudItem(
-        selectedCollection.name,
+        selectedCollection.id,
         editingRecord.id,
         updateData
       );
@@ -148,16 +172,14 @@ export default function Content() {
       if (response.error) {
         toast.dismiss(loadingToast);
         toast.error(`Failed to update record: ${response.error.message}`);
-        console.error('Update error:', response.error);
       } else {
         toast.dismiss(loadingToast);
         toast.success('Record updated successfully!');
         setShowEditDialog(false);
         setEditingRecord(null);
-        fetchRecords();
+        await fetchRecords();
       }
     } catch (error: any) {
-      console.error('Failed to update record:', error);
       toast.error(error.message || 'Failed to update record');
     } finally {
       setIsUpdating(false);
@@ -172,7 +194,11 @@ export default function Content() {
     try {
       setIsDeleting(true);
       const loadingToast = toast.loading('Deleting record...');
-      const response = await apiClient.deleteCrudItem(selectedCollection.name, id);
+      
+      const response = await apiClient.deleteCrudItem(
+        selectedCollection.id,
+        id
+      );
       
       if (response.error) {
         toast.dismiss(loadingToast);
@@ -180,10 +206,9 @@ export default function Content() {
       } else {
         toast.dismiss(loadingToast);
         toast.success('Record deleted successfully!');
-        fetchRecords();
+        await fetchRecords();
       }
     } catch (error: any) {
-      console.error('Failed to delete record:', error);
       toast.error(error.message || 'Failed to delete record');
     } finally {
       setIsDeleting(false);
@@ -192,8 +217,9 @@ export default function Content() {
 
   const columns =
     selectedCollection?.fields?.map((field: any) => ({
-      name: field.dbColumn || field.name,
+      name: field.name,
       type: field.type,
+      dbColumn: field.dbColumn || field.name,
     })) || [];
 
   const totalPages = Math.ceil(total / limit);

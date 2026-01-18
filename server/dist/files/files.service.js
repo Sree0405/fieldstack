@@ -52,7 +52,7 @@ let FilesService = class FilesService {
     constructor(prisma) {
         this.prisma = prisma;
         this.uploadDir = path.join(process.cwd(), 'uploads', 'files');
-        this.assetBaseUrl = '/assets';
+        this.assetBaseUrl = '/api/assets';
         this.ensureUploadDir();
     }
     async ensureUploadDir() {
@@ -129,7 +129,7 @@ let FilesService = class FilesService {
         return file;
     }
     /**
-     * Serve file content
+     * Serve file content (Buffer) - Deprecated, use getFileStream
      */
     async serveFile(fileId) {
         const file = await this.getFileById(fileId);
@@ -137,6 +137,21 @@ let FilesService = class FilesService {
             const filePath = path.join(process.cwd(), file.path);
             const fileContent = await fs.readFile(filePath);
             return fileContent;
+        }
+        catch (error) {
+            throw new common_1.NotFoundException('File not found on disk');
+        }
+    }
+    /**
+     * Get file stream
+     */
+    async getFileStream(fileId) {
+        const file = await this.getFileById(fileId);
+        const filePath = path.join(process.cwd(), file.path);
+        try {
+            await fs.access(filePath);
+            const { createReadStream } = await Promise.resolve().then(() => __importStar(require('fs')));
+            return createReadStream(filePath);
         }
         catch (error) {
             throw new common_1.NotFoundException('File not found on disk');

@@ -16,17 +16,25 @@ exports.SystemController = void 0;
 const common_1 = require("@nestjs/common");
 const jwt_guard_1 = require("../auth/guards/jwt.guard");
 const system_service_1 = require("./system.service");
+const site_info_service_1 = require("../site-info/site-info.service");
 // DTOs
 class CreateFieldDto {
 }
 class UpdateCollectionSchemaDto {
 }
 let SystemController = class SystemController {
-    constructor(systemService) {
+    constructor(systemService, siteInfoService) {
         this.systemService = systemService;
+        this.siteInfoService = siteInfoService;
     }
     async getEndpoints() {
         return this.systemService.getEndpoints();
+    }
+    async getSettings() {
+        return this.siteInfoService.getOrCreateSiteInfo();
+    }
+    async updateSettings(data) {
+        return this.siteInfoService.updateSiteDetails(data);
     }
     async addFieldToCollection(collectionId, createFieldDto) {
         return this.systemService.addFieldToCollection(collectionId, createFieldDto);
@@ -48,6 +56,19 @@ __decorate([
     __metadata("design:paramtypes", []),
     __metadata("design:returntype", Promise)
 ], SystemController.prototype, "getEndpoints", null);
+__decorate([
+    (0, common_1.Get)('settings'),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", []),
+    __metadata("design:returntype", Promise)
+], SystemController.prototype, "getSettings", null);
+__decorate([
+    (0, common_1.Patch)('settings'),
+    __param(0, (0, common_1.Body)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object]),
+    __metadata("design:returntype", Promise)
+], SystemController.prototype, "updateSettings", null);
 __decorate([
     (0, common_1.Post)('collections/:collectionId/fields'),
     __param(0, (0, common_1.Param)('collectionId')),
@@ -80,5 +101,6 @@ __decorate([
 exports.SystemController = SystemController = __decorate([
     (0, common_1.Controller)('system'),
     (0, common_1.UseGuards)(jwt_guard_1.JwtAuthGuard),
-    __metadata("design:paramtypes", [system_service_1.SystemService])
+    __metadata("design:paramtypes", [system_service_1.SystemService,
+        site_info_service_1.SiteInfoService])
 ], SystemController);

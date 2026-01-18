@@ -9,6 +9,7 @@ import {
 } from '@nestjs/common';
 import { JwtAuthGuard } from '../auth/guards/jwt.guard';
 import { SystemService } from './system.service';
+import { SiteInfoService } from '../site-info/site-info.service';
 
 // DTOs
 class CreateFieldDto {
@@ -28,11 +29,24 @@ class UpdateCollectionSchemaDto {
 @Controller('system')
 @UseGuards(JwtAuthGuard)
 export class SystemController {
-  constructor(private systemService: SystemService) {}
+  constructor(
+    private systemService: SystemService,
+    private siteInfoService: SiteInfoService
+  ) { }
 
   @Get('endpoints')
   async getEndpoints() {
     return this.systemService.getEndpoints();
+  }
+
+  @Get('settings')
+  async getSettings() {
+    return this.siteInfoService.getOrCreateSiteInfo();
+  }
+
+  @Patch('settings')
+  async updateSettings(@Body() data: any) {
+    return this.siteInfoService.updateSiteDetails(data);
   }
 
   @Post('collections/:collectionId/fields')

@@ -12,42 +12,14 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.SystemService = void 0;
 const common_1 = require("@nestjs/common");
 const prisma_service_1 = require("../prisma/prisma.service");
+const collections_service_1 = require("../collections/collections.service");
 let SystemService = class SystemService {
-    constructor(prisma) {
+    constructor(prisma, collectionsService) {
         this.prisma = prisma;
+        this.collectionsService = collectionsService;
     }
     async addFieldToCollection(collectionId, createFieldDto) {
-        const collection = await this.prisma.collection.findUnique({
-            where: { id: collectionId },
-            include: { fields: true },
-        });
-        if (!collection) {
-            throw new Error(`Collection ${collectionId} not found`);
-        }
-        const field = await this.prisma.field.create({
-            data: {
-                name: createFieldDto.name,
-                dbColumn: createFieldDto.dbColumn || createFieldDto.name.toLowerCase(),
-                type: createFieldDto.type,
-                required: createFieldDto.required || false,
-                collectionId,
-            },
-        });
-        // Add column to dynamic table
-        const tableName = collection.tableName;
-        const columnType = this.getPostgresColumnType(createFieldDto.type);
-        const nullable = createFieldDto.required ? 'NOT NULL' : '';
-        const defaultVal = createFieldDto.defaultValue
-            ? `DEFAULT '${createFieldDto.defaultValue}'`
-            : '';
-        const alterQuery = `ALTER TABLE "${tableName}" ADD COLUMN "${createFieldDto.dbColumn || createFieldDto.name.toLowerCase()}" ${columnType} ${nullable} ${defaultVal}`;
-        try {
-            await this.prisma.$executeRawUnsafe(alterQuery);
-        }
-        catch (error) {
-            console.error('Error adding column:', error);
-        }
-        return field;
+        return this.collectionsService.addField(collectionId, createFieldDto.name, createFieldDto.type, createFieldDto.dbColumn, createFieldDto.required, createFieldDto.uiComponent ? { uiComponent: createFieldDto.uiComponent } : undefined);
     }
     async updateCollectionSchema(collectionId, updateDto) {
         const collection = await this.prisma.collection.findUnique({
@@ -199,5 +171,6 @@ let SystemService = class SystemService {
 exports.SystemService = SystemService;
 exports.SystemService = SystemService = __decorate([
     (0, common_1.Injectable)(),
-    __metadata("design:paramtypes", [prisma_service_1.PrismaService])
+    __metadata("design:paramtypes", [prisma_service_1.PrismaService,
+        collections_service_1.CollectionsService])
 ], SystemService);

@@ -9,14 +9,17 @@ import {
   UploadedFiles,
   BadRequestException,
   Query,
+  Res,
+  StreamableFile,
 } from '@nestjs/common';
 import { FileInterceptor, FilesInterceptor } from '@nestjs/platform-express';
 import { FilesService } from './files.service';
 import { memoryStorage } from 'multer';
+import { Response } from 'express';
 
-@Controller('api')
+@Controller()
 export class FilesController {
-  constructor(private filesService: FilesService) {}
+  constructor(private filesService: FilesService) { }
 
   /**
    * Upload a single file
@@ -71,6 +74,24 @@ export class FilesController {
   @Get('files/:id')
   async getFile(@Param('id') fileId: string) {
     return this.filesService.getFileById(fileId);
+  }
+
+  /**
+   * Serve file content
+   * GET /api/assets/:id
+   */
+  @Get('assets/:id')
+  async serveFile(@Param('id') fileId: string, @Res({ passthrough: true }) res: Response) {
+    const file = await this.filesService.getFileById(fileId);
+    const stream = await this.filesService.getFileStream(fileId);
+
+    res.set({
+      'Content-Type': file.mimeType,
+      'Content-Disposition': `inline; filename="${file.originalName}"`,
+      'Content-Length': file.size.toString(),
+    });
+
+    return new StreamableFile(stream as any);
   }
 
   /**

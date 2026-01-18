@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
+import { CollectionsService } from '../collections/collections.service';
 
 interface CreateFieldDto {
   name: string;
@@ -17,48 +18,23 @@ interface UpdateCollectionSchemaDto {
 
 @Injectable()
 export class SystemService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private collectionsService: CollectionsService
+  ) { }
 
   async addFieldToCollection(
     collectionId: string,
     createFieldDto: CreateFieldDto,
   ) {
-    const collection = await this.prisma.collection.findUnique({
-      where: { id: collectionId },
-      include: { fields: true },
-    });
-
-    if (!collection) {
-      throw new Error(`Collection ${collectionId} not found`);
-    }
-
-    const field = await this.prisma.field.create({
-      data: {
-        name: createFieldDto.name,
-        dbColumn: createFieldDto.dbColumn || createFieldDto.name.toLowerCase(),
-        type: createFieldDto.type as any,
-        required: createFieldDto.required || false,
-        collectionId,
-      },
-    });
-
-    // Add column to dynamic table
-    const tableName = collection.tableName;
-    const columnType = this.getPostgresColumnType(createFieldDto.type);
-    const nullable = createFieldDto.required ? 'NOT NULL' : '';
-    const defaultVal = createFieldDto.defaultValue
-      ? `DEFAULT '${createFieldDto.defaultValue}'`
-      : '';
-
-    const alterQuery = `ALTER TABLE "${tableName}" ADD COLUMN "${createFieldDto.dbColumn || createFieldDto.name.toLowerCase()}" ${columnType} ${nullable} ${defaultVal}`;
-
-    try {
-      await this.prisma.$executeRawUnsafe(alterQuery);
-    } catch (error) {
-      console.error('Error adding column:', error);
-    }
-
-    return field;
+    return this.collectionsService.addField(
+      collectionId,
+      createFieldDto.name,
+      createFieldDto.type,
+      createFieldDto.dbColumn,
+      createFieldDto.required,
+      createFieldDto.uiComponent ? { uiComponent: createFieldDto.uiComponent } : undefined
+    );
   }
 
   async updateCollectionSchema(

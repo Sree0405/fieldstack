@@ -3,8 +3,7 @@
  * Communicates with the NestJS backend (http://localhost:4000)
  */
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 
-  (import.meta.env.DEV ? 'http://localhost:4000/api' : '/api');
+const API_BASE_URL = import.meta.env.VITE_API_URL || '/api';
 
 interface ApiResponse<T> {
   data?: T;
@@ -131,7 +130,7 @@ class ApiClient {
   }
 
   async login(credentials: LoginRequest): Promise<ApiResponse<LoginResponse>> {
-    const response = await this.request<LoginResponse>('/api/auth/login', {
+    const response = await this.request<LoginResponse>('/auth/login', {
       method: 'POST',
       body: JSON.stringify(credentials),
     });
@@ -149,7 +148,7 @@ class ApiClient {
     displayName: string;
     role?: string;
   }): Promise<ApiResponse<LoginResponse>> {
-    const response = await this.request<LoginResponse>('/api/auth/register', {
+    const response = await this.request<LoginResponse>('/auth/register', {
       method: 'POST',
       body: JSON.stringify(data),
     });
@@ -275,38 +274,38 @@ class ApiClient {
   }
 
   async getCrudData(
-    collection: string,
+    collectionId: string,
     page: string = '1',
     limit: string = '25'
   ): Promise<ApiResponse<any>> {
     return this.request(
-      `/${collection}?page=${page}&limit=${limit}`,
+      `/collections/${collectionId}/records?page=${page}&limit=${limit}`,
       {
         method: 'GET',
       }
     );
   }
 
-  async createCrudItem(collection: string, data: any): Promise<ApiResponse<any>> {
-    return this.request(`/${collection}`, {
+  async createCrudItem(collectionId: string, data: any): Promise<ApiResponse<any>> {
+    return this.request(`/collections/${collectionId}/records`, {
       method: 'POST',
       body: JSON.stringify(data),
     });
   }
 
   async updateCrudItem(
-    collection: string,
-    id: string,
+    collectionId: string,
+    recordId: string,
     data: any
   ): Promise<ApiResponse<any>> {
-    return this.request(`/${collection}/${id}`, {
+    return this.request(`/collections/${collectionId}/records/${recordId}`, {
       method: 'PATCH',
       body: JSON.stringify(data),
     });
   }
 
-  async deleteCrudItem(collection: string, id: string): Promise<ApiResponse<any>> {
-    return this.request(`/${collection}/${id}`, {
+  async deleteCrudItem(collectionId: string, recordId: string): Promise<ApiResponse<any>> {
+    return this.request(`/collections/${collectionId}/records/${recordId}`, {
       method: 'DELETE',
     });
   }
@@ -365,6 +364,7 @@ class ApiClient {
     }
 
     try {
+      console.log(`[API] POST ${url}`);
       const response = await fetch(url, {
         method: 'POST',
         headers,
@@ -372,12 +372,14 @@ class ApiClient {
       });
 
       if (!response.ok) {
+        console.error(`[API] Error: HTTP ${response.status}`);
         throw new Error(`HTTP ${response.status}`);
       }
 
       const data = await response.json();
       return { data };
     } catch (error: any) {
+      console.error(`[API] Error:`, error.message);
       return {
         error: {
           message: error.message || 'File upload failed',
@@ -404,6 +406,7 @@ class ApiClient {
     }
 
     try {
+      console.log(`[API] POST ${url}`);
       const response = await fetch(url, {
         method: 'POST',
         headers,
@@ -411,12 +414,14 @@ class ApiClient {
       });
 
       if (!response.ok) {
+        console.error(`[API] Error: HTTP ${response.status}`);
         throw new Error(`HTTP ${response.status}`);
       }
 
       const data = await response.json();
       return { data };
     } catch (error: any) {
+      console.error(`[API] Error:`, error.message);
       return {
         error: {
           message: error.message || 'File upload failed',
@@ -471,8 +476,11 @@ class ApiClient {
   /**
    * Get site info
    */
+  /**
+   * Get site info
+   */
   async getSiteInfo(): Promise<ApiResponse<any>> {
-    return this.request('/site-info', {
+    return this.request('/system/settings', {
       method: 'GET',
     });
   }
@@ -490,7 +498,7 @@ class ApiClient {
     socialLinks?: any;
     metadata?: any;
   }): Promise<ApiResponse<any>> {
-    return this.request('/site-info', {
+    return this.request('/system/settings', {
       method: 'PATCH',
       body: JSON.stringify(data),
     });
@@ -500,7 +508,7 @@ class ApiClient {
    * Update site logo
    */
   async updateSiteLogo(logoId: string): Promise<ApiResponse<any>> {
-    return this.request('/site-info', {
+    return this.request('/system/settings', {
       method: 'PATCH',
       body: JSON.stringify({ logoId }),
     });
@@ -510,7 +518,7 @@ class ApiClient {
    * Update site favicon
    */
   async updateSiteFavicon(faviconId: string): Promise<ApiResponse<any>> {
-    return this.request('/site-info', {
+    return this.request('/system/settings', {
       method: 'PATCH',
       body: JSON.stringify({ faviconId }),
     });

@@ -10,18 +10,17 @@ exports.CollectionsModule = void 0;
 const common_1 = require("@nestjs/common");
 const collections_controller_1 = require("./collections.controller");
 const collections_service_1 = require("./collections.service");
-const schema_generator_service_1 = require("./schema-generator.service");
 const field_validation_service_1 = require("./field-validation.service");
+const records_module_1 = require("./records/records.module");
 const prisma_module_1 = require("../prisma/prisma.module");
-const notifications_module_1 = require("../notifications/notifications.module");
 let CollectionsModule = class CollectionsModule {
 };
 exports.CollectionsModule = CollectionsModule;
 exports.CollectionsModule = CollectionsModule = __decorate([
     (0, common_1.Module)({
-        imports: [prisma_module_1.PrismaModule, notifications_module_1.NotificationsModule],
+        imports: [prisma_module_1.PrismaModule, records_module_1.RecordsModule],
         controllers: [collections_controller_1.CollectionsController],
-        providers: [collections_service_1.CollectionsService, schema_generator_service_1.SchemaGeneratorService, field_validation_service_1.FieldValidationService],
-        exports: [collections_service_1.CollectionsService, schema_generator_service_1.SchemaGeneratorService, field_validation_service_1.FieldValidationService],
+        providers: [collections_service_1.CollectionsService, field_validation_service_1.FieldValidationService],
+        exports: [collections_service_1.CollectionsService, records_module_1.RecordsModule],
     })
 ], CollectionsModule);
