@@ -78,13 +78,8 @@
     "typescript": "^5.8.3",
     "typescript-eslint": "^8.38.0",
     "vaul": "^0.9.9",
-    "vite": "^5.4.19",
-    "zod": "^3.25.76"
-  },
-  "overrides": {
-    "rollup": "3.29.4"
-  },
-  "devDependencies": {
-    "@vitejs/plugin-react": "^5.1.2"
+    "vite": "4.5.0",
+    "zod": "^3.25.76",
+    "@vitejs/plugin-react": "4.2.1"
   }
 }
