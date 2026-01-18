@@ -3,7 +3,7 @@
  * Communicates with the NestJS backend (http://localhost:4000)
  */
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:4000';
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://fieldstack.onrender.com/api/';
 
 interface ApiResponse<T> {
   data?: T;
