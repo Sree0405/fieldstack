@@ -1,5 +1,5 @@
 import { Injectable, BadRequestException, ConflictException, NotFoundException } from '@nestjs/common';
-import { PrismaService } from '@/prisma/prisma.service';
+import { PrismaService } from '..//prisma/prisma.service';
 import { CreateCollectionDto } from './dto/create-collection.dto';
 import { FieldType } from '@prisma/client';
 import { getPgType } from './field-types';
