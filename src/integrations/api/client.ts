@@ -343,6 +343,184 @@ class ApiClient {
       body: JSON.stringify(data),
     });
   }
+
+  // ============================================================
+  // FILE MANAGEMENT
+  // ============================================================
+
+  /**
+   * Upload a single file
+   */
+  async uploadFile(file: File): Promise<ApiResponse<any>> {
+    const formData = new FormData();
+    formData.append('file', file);
+
+    const url = `${API_BASE_URL}/api/files`;
+    const headers: HeadersInit = {};
+
+    if (this.accessToken) {
+      headers['Authorization'] = `Bearer ${this.accessToken}`;
+    }
+
+    try {
+      const response = await fetch(url, {
+        method: 'POST',
+        headers,
+        body: formData,
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}`);
+      }
+
+      const data = await response.json();
+      return { data };
+    } catch (error: any) {
+      return {
+        error: {
+          message: error.message || 'File upload failed',
+          status: 0,
+        },
+      };
+    }
+  }
+
+  /**
+   * Upload multiple files
+   */
+  async uploadMultipleFiles(files: File[]): Promise<ApiResponse<any>> {
+    const formData = new FormData();
+    files.forEach((file) => {
+      formData.append('files', file);
+    });
+
+    const url = `${API_BASE_URL}/api/files/multiple`;
+    const headers: HeadersInit = {};
+
+    if (this.accessToken) {
+      headers['Authorization'] = `Bearer ${this.accessToken}`;
+    }
+
+    try {
+      const response = await fetch(url, {
+        method: 'POST',
+        headers,
+        body: formData,
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}`);
+      }
+
+      const data = await response.json();
+      return { data };
+    } catch (error: any) {
+      return {
+        error: {
+          message: error.message || 'File upload failed',
+          status: 0,
+        },
+      };
+    }
+  }
+
+  /**
+   * Get file metadata
+   */
+  async getFile(fileId: string): Promise<ApiResponse<any>> {
+    return this.request(`/api/files/${fileId}`, {
+      method: 'GET',
+    });
+  }
+
+  /**
+   * Get all files (with pagination)
+   */
+  async getAllFiles(
+    limit: number = 50,
+    offset: number = 0
+  ): Promise<ApiResponse<any>> {
+    return this.request(`/api/files?limit=${limit}&offset=${offset}`, {
+      method: 'GET',
+    });
+  }
+
+  /**
+   * Delete file
+   */
+  async deleteFile(fileId: string): Promise<ApiResponse<any>> {
+    return this.request(`/api/files/${fileId}`, {
+      method: 'DELETE',
+    });
+  }
+
+  /**
+   * Get asset URL for a file ID
+   * Helper function to construct the URL for serving a file
+   */
+  getAssetUrl(fileId: string): string {
+    return `${API_BASE_URL}/assets/${fileId}`;
+  }
+
+  // ============================================================
+  // SITE INFO MANAGEMENT
+  // ============================================================
+
+  /**
+   * Get site info
+   */
+  async getSiteInfo(): Promise<ApiResponse<any>> {
+    return this.request('/api/site-info', {
+      method: 'GET',
+    });
+  }
+
+  /**
+   * Update site info details
+   */
+  async updateSiteInfo(data: {
+    siteName?: string;
+    siteTitle?: string;
+    siteDescription?: string;
+    siteUrl?: string;
+    contactEmail?: string;
+    contactPhone?: string;
+    socialLinks?: any;
+    metadata?: any;
+  }): Promise<ApiResponse<any>> {
+    return this.request('/api/site-info', {
+      method: 'PATCH',
+      body: JSON.stringify(data),
+    });
+  }
+
+  /**
+   * Update site logo
+   */
+  async updateSiteLogo(logoId: string): Promise<ApiResponse<any>> {
+    return this.request('/api/site-info', {
+      method: 'PATCH',
+      body: JSON.stringify({ logoId }),
+    });
+  }
+
+  /**
+   * Update site favicon
+   */
+  async updateSiteFavicon(faviconId: string): Promise<ApiResponse<any>> {
+    return this.request('/api/site-info', {
+      method: 'PATCH',
+      body: JSON.stringify({ faviconId }),
+    });
+  }
 }
 
 export const apiClient = new ApiClient();
+
+/**
+ * Helper function to get asset URL
+ * Usage: getAssetsUrl(fileId)
+ */
+export const getAssetsUrl = (fileId: string): string => {
+  return apiClient.getAssetUrl(fileId);
+};

@@ -42,6 +42,13 @@ model Field {
   type        FieldType
   required    Boolean   @default(false)
   
+  // File field specific
+  isFileField Boolean   @default(false)
+  acceptedFileTypes String? // comma-separated MIME types (e.g., "image/*,video/*")
+  maxFileSize Int?      // Max file size in bytes
+  
+  metadata    Json?     // Additional field metadata
+  
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   
@@ -147,6 +154,54 @@ model Permission {
   
   @@unique([roleId, collectionId, action])
   @@map("permissions")
+}
+
+// ============================================================
+// FILES & MEDIA
+// ============================================================
+
+model File {
+  id        String   @id @default(uuid())
+  
+  fileName  String
+  originalName String
+  mimeType  String
+  size      Int      // File size in bytes
+  
+  path      String   @unique // Relative path to file
+  url       String   // Public URL for serving
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("files")
+}
+
+// ============================================================
+// SITE INFO & CONFIGURATION
+// ============================================================
+
+model SiteInfo {
+  id        String   @id @default(uuid())
+  
+  siteName  String
+  siteTitle String?
+  siteDescription String?
+  siteUrl   String?
+  
+  logoId    String?  // File ID for logo
+  faviconId String?  // File ID for favicon
+  
+  contactEmail String?
+  contactPhone String?
+  
+  socialLinks Json? // { twitter, facebook, instagram, etc }
+  metadata    Json? // Additional site metadata
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("site_info")
 }
 
 // ============================================================

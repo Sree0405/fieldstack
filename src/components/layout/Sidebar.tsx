@@ -12,7 +12,9 @@ import {
   ChevronLeft,
   ChevronRight,
   Bell,
-  User
+  User,
+  Files,
+  Globe,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useState ,useEffect} from "react";
@@ -39,6 +41,7 @@ const navSections = [
       { to: "/users", icon: Users, label: "Users" },
       { to: "/roles", icon: Shield, label: "Roles & Permissions" },
       { to: "/media", icon: FileText, label: "Media Library" },
+      { to: "/file-manager", icon: Files, label: "File Manager" },
     ],
   },
   {
@@ -47,6 +50,7 @@ const navSections = [
       { to: "/notifications", icon: Bell, label: "Notifications" },
       { to: "/profile", icon: User, label: "Profile" },
       { to: "/settings", icon: Settings, label: "Settings" },
+      { to: "/site-settings", icon: Globe, label: "Site Settings" },
     ],
   },
 ];

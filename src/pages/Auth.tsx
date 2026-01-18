@@ -8,6 +8,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import fieldStack from '../../public/FieldStack_logo.svg';
 import Waves from '@/components/Waves';
 export default function Auth() {
   const [isLoading, setIsLoading] = useState(false);
@@ -84,7 +85,7 @@ export default function Auth() {
   <div className="max-w-md space-y-8">
     <div className="flex items-center gap-3 animate-fade-down">
       <div className="h-12 w-12 rounded-xl bg-purple-600/30 border border-purple-500/40 flex items-center justify-center text-2xl shadow-lg shadow-purple-500/30">
-        🚀
+        <img src={fieldStack} alt="Fieldstack Logo" className="h-8 w-8" />
       </div>
       <h1 className="text-3xl font-semibold tracking-tight">fieldstack</h1>
     </div>

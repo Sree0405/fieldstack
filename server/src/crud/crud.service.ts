@@ -238,11 +238,35 @@ export class CrudService {
         }
       }
 
-      const updates = Object.keys(cleanData)
-        .map((k, i) => `"${k}" = $${i + 1}`)
+      // Map field names to db columns for UPDATE statement
+      const fieldMap = new Map(collection.fields.map((f: any) => [f.name, f.dbColumn]));
+      
+      const dataEntries = Object.entries(cleanData);
+      if (dataEntries.length === 0) {
+        // If no data to update, just return current record
+        const query = `SELECT * FROM "${collection.tableName}" WHERE id = $1`;
+        const result: any = await this.prisma.$queryRawUnsafe(query, id);
+        
+        if (!result || result.length === 0) {
+          throw new NotFoundException('Record not found');
+        }
+
+        return {
+          id,
+          collection: collection.name,
+          data: result[0],
+          updatedAt: new Date(),
+        };
+      }
+
+      const updates = dataEntries
+        .map(([fieldName, _], i) => {
+          const dbColumn = fieldMap.get(fieldName) || fieldName;
+          return `"${dbColumn}" = $${i + 1}`;
+        })
         .join(',');
 
-      const vals = Object.values(cleanData);
+      const vals = dataEntries.map(([_, v]) => v);
       const query = `UPDATE "${collection.tableName}" SET ${updates}, updated_at = NOW() WHERE id = $${vals.length + 1} RETURNING *`;
 
       const result: any = await this.prisma.$queryRawUnsafe(query, ...vals, id);

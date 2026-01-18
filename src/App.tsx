@@ -19,6 +19,8 @@ import Profile from "./pages/Profile";
 import Notifications from "./pages/Notifications";
 import Auth from "./pages/Auth";
 import NotFound from "./pages/NotFound";
+import FileManager from "./pages/FileManager";
+import SiteSettings from "./pages/SiteSettings";
 
 const queryClient = new QueryClient();
 
@@ -58,6 +60,8 @@ const App = () => (
               <Route path="/settings" element={<Settings />} />
               <Route path="/profile" element={<Profile />} />
               <Route path="/notifications" element={<Notifications />} />
+              <Route path="/file-manager" element={<FileManager />} />
+              <Route path="/site-settings" element={<SiteSettings />} />
             </Route>
             <Route path="*" element={<NotFound />} />
           </Routes>

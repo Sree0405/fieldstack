@@ -7,7 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Loader2, Trash2, Plus } from 'lucide-react';
+import { Loader2, Trash2, Plus, Edit2 } from 'lucide-react';
 import { apiClient } from '@/integrations/api/client';
 
 export default function Content() {
@@ -16,12 +16,15 @@ export default function Content() {
   const [records, setRecords] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [showNewDialog, setShowNewDialog] = useState(false);
+  const [showEditDialog, setShowEditDialog] = useState(false);
   const [newRecord, setNewRecord] = useState<any>({});
+  const [editingRecord, setEditingRecord] = useState<any>(null);
   const [page, setPage] = useState(1);
   const [limit] = useState(25);
   const [total, setTotal] = useState(0);
   const [isCreating, setIsCreating] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [isUpdating, setIsUpdating] = useState(false);
 
   useEffect(() => {
     fetchCollections();
@@ -66,6 +69,7 @@ export default function Content() {
         setRecords(response.data.data || []);
         setTotal(response.data.total || 0);
       } else if (response.error) {
+        
         toast.error(`Failed to load records: ${response.error.message}`);
         setRecords([]);
         setTotal(0);
@@ -110,6 +114,53 @@ export default function Content() {
       toast.error(error.message || 'Failed to create record');
     } finally {
       setIsCreating(false);
+    }
+  };
+
+  const handleOpenEditDialog = (record: any) => {
+    setEditingRecord({ ...record });
+    setShowEditDialog(true);
+  };
+
+  const handleUpdateRecord = async () => {
+    if (!editingRecord) {
+      toast.error('No record selected');
+      return;
+    }
+
+    try {
+      setIsUpdating(true);
+      const loadingToast = toast.loading('Updating record...');
+
+      // Prepare update data - exclude system fields
+      const updateData = { ...editingRecord };
+      delete updateData.id;
+      delete updateData.created_at;
+      delete updateData.updated_at;
+      delete updateData.deleted_at;
+
+      const response = await apiClient.updateCrudItem(
+        selectedCollection.name,
+        editingRecord.id,
+        updateData
+      );
+
+      if (response.error) {
+        toast.dismiss(loadingToast);
+        toast.error(`Failed to update record: ${response.error.message}`);
+        console.error('Update error:', response.error);
+      } else {
+        toast.dismiss(loadingToast);
+        toast.success('Record updated successfully!');
+        setShowEditDialog(false);
+        setEditingRecord(null);
+        fetchRecords();
+      }
+    } catch (error: any) {
+      console.error('Failed to update record:', error);
+      toast.error(error.message || 'Failed to update record');
+    } finally {
+      setIsUpdating(false);
     }
   };
 
@@ -238,19 +289,34 @@ export default function Content() {
                               </TableCell>
                             ))}
                             <TableCell className="text-right">
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={() => handleDeleteRecord(record.id)}
-                                disabled={isDeleting}
-                                className="text-red-500 hover:text-red-700 hover:bg-red-50"
-                              >
-                                {isDeleting ? (
-                                  <Loader2 className="h-4 w-4 animate-spin" />
-                                ) : (
-                                  <Trash2 className="h-4 w-4" />
-                                )}
-                              </Button>
+                              <div className="flex gap-2 justify-end">
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() => handleOpenEditDialog(record)}
+                                  disabled={isUpdating}
+                                  className="text-blue-500 hover:text-blue-700 hover:bg-blue-50"
+                                >
+                                  {isUpdating ? (
+                                    <Loader2 className="h-4 w-4 animate-spin" />
+                                  ) : (
+                                    <Edit2 className="h-4 w-4" />
+                                  )}
+                                </Button>
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() => handleDeleteRecord(record.id)}
+                                  disabled={isDeleting}
+                                  className="text-red-500 hover:text-red-700 hover:bg-red-50"
+                                >
+                                  {isDeleting ? (
+                                    <Loader2 className="h-4 w-4 animate-spin" />
+                                  ) : (
+                                    <Trash2 className="h-4 w-4" />
+                                  )}
+                                </Button>
+                              </div>
                             </TableCell>
                           </TableRow>
                         ))}
@@ -336,6 +402,67 @@ export default function Content() {
                   </>
                 ) : (
                   'Create Record'
+                )}
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Edit Record Dialog */}
+      <Dialog open={showEditDialog} onOpenChange={setShowEditDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Edit Record</DialogTitle>
+            <DialogDescription>
+              Update {selectedCollection?.displayName} record details
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            {selectedCollection?.fields?.map((field: any) => {
+              // Skip system auto-managed fields
+              if (['id', 'created_at', 'updated_at', 'deleted_at', 'version'].includes(field.name)) {
+                return null;
+              }
+              return (
+                <div key={field.id} className="space-y-2">
+                  <Label htmlFor={`edit-${field.name}`}>
+                    {field.name}
+                    {field.required && <span className="text-red-500">*</span>}
+                  </Label>
+                  <Input
+                    id={`edit-${field.name}`}
+                    placeholder={field.name}
+                    value={editingRecord?.[field.name] || ''}
+                    onChange={(e) =>
+                      setEditingRecord({
+                        ...editingRecord,
+                        [field.name]: e.target.value,
+                      })
+                    }
+                  />
+                </div>
+              );
+            })}
+            <div className="flex gap-2 justify-end">
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setShowEditDialog(false);
+                  setEditingRecord(null);
+                }}
+                disabled={isUpdating}
+              >
+                Cancel
+              </Button>
+              <Button onClick={handleUpdateRecord} disabled={isUpdating}>
+                {isUpdating ? (
+                  <>
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    Updating...
+                  </>
+                ) : (
+                  'Update Record'
                 )}
               </Button>
             </div>

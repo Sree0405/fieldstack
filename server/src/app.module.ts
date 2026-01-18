@@ -12,6 +12,8 @@ import { PermissionsModule } from './permissions/permissions.module';
 import { SystemModule } from './system/system.module';
 import { RolesModule } from './roles/roles.module';
 import { NotificationsModule } from './notifications/notifications.module';
+import { FilesModule } from './files/files.module';
+import { SiteInfoModule } from './site-info/site-info.module';
 
 @Module({
   imports: [
@@ -34,6 +36,8 @@ import { NotificationsModule } from './notifications/notifications.module';
     RolesModule,
     PermissionsModule,
     SystemModule,
+    FilesModule,
+    SiteInfoModule,
   ],
 })
 export class AppModule {}

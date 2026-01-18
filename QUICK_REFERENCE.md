@@ -293,15 +293,156 @@ docker run -p 4000:4000 fieldstack:latest
 
 ---
 
+## � File Management & Site Configuration
+
+### File Upload
+```typescript
+import { apiClient, getAssetsUrl } from '@/integrations/api/client';
+
+// Upload single file
+const response = await apiClient.uploadFile(file);
+const fileId = response.data.id;
+
+// Display file
+<img src={getAssetsUrl(fileId)} alt="Image" />
+
+// Upload multiple files
+const multiResponse = await apiClient.uploadMultipleFiles([file1, file2]);
+
+// Get file list
+const filesResponse = await apiClient.getAllFiles(50, 0);
+const files = filesResponse.data.data;
+
+// Delete file
+await apiClient.deleteFile(fileId);
+```
+
+### Site Configuration
+```typescript
+// Get site info
+const siteResponse = await apiClient.getSiteInfo();
+const site = siteResponse.data;
+
+// Update site details
+await apiClient.updateSiteInfo({
+  siteName: 'My Site',
+  siteTitle: 'Welcome',
+  contactEmail: 'info@example.com'
+});
+
+// Upload logo
+const logoResponse = await apiClient.uploadFile(logoFile);
+await apiClient.updateSiteLogo(logoResponse.data.id);
+
+// Upload favicon
+const faviconResponse = await apiClient.uploadFile(faviconFile);
+await apiClient.updateSiteFavicon(faviconResponse.data.id);
+```
+
+### Content Editing (NEW)
+```typescript
+// Edit existing record
+const updateResponse = await apiClient.updateCrudItem(
+  'collection_name',
+  recordId,
+  {
+    field1: 'new value',
+    field2: 'another value'
+  }
+);
+
+// The edit UI automatically appears in Content page
+// Just click the edit button on any record
+```
+
+### File API Endpoints
+```
+POST   /api/files                 - Upload single file
+POST   /api/files/multiple        - Upload multiple files
+GET    /api/files?limit=50&offset=0  - List files
+GET    /api/files/:id             - Get file metadata
+DELETE /api/files/:id             - Delete file
+GET    /assets/:id                - Serve file content
+
+GET    /api/site-info             - Get site config
+PATCH  /api/site-info             - Update site config
+PATCH  /api/site-info/:id         - Update by ID
+```
+
+### Example: Create Post with Image
+```typescript
+async function createPostWithImage(title: string, imageFile: File) {
+  // Upload image
+  const uploadRes = await apiClient.uploadFile(imageFile);
+  const imageId = uploadRes.data.id;
+
+  // Create post with image
+  return await apiClient.createCrudItem('posts', {
+    title,
+    featured_image: imageId  // Store the file ID
+  });
+}
+```
+
+### Key Helpers
+```typescript
+// Get asset URL for any file ID
+import { getAssetsUrl } from '@/integrations/api/client';
+const url = getAssetsUrl(fileId);
+
+// Use in images/videos
+<img src={url} alt="Image" />
+<video src={url} controls />
+```
+
+### New Pages
+- `/file-manager` - Upload and manage files
+- `/site-settings` - Configure site info and branding
+- Content page now supports edit/update
+
+---
+
+## 🔧 File Management Setup
+
+1. Install dependencies:
+   ```bash
+   cd server
+   npm install @nestjs/platform-express uuid
+   ```
+
+2. Run migration:
+   ```bash
+   npx prisma migrate deploy
+   ```
+
+3. Restart backend:
+   ```bash
+   npm run start:dev
+   ```
+
+4. Add routes and navigation to frontend
+
+---
+
+## 📖 File Management Documentation
+
+- **FILE_MANAGEMENT_GUIDE.md** - Complete API reference
+- **IMPLEMENTATION_CHECKLIST.md** - Setup and testing
+- **FILE_MANAGEMENT_UPDATE.md** - Overview of changes
+
+---
+
 ## 📞 Support
 
 - 📖 Full docs: See SETUP.md
 - 🐛 Issues: Check TROUBLESHOOTING.md
 - 💬 API: See AUTH_FIXES_COMPLETE.md
 - 📋 Design: See ARCHITECTURE.md
+- 📁 Files: See FILE_MANAGEMENT_GUIDE.md
+- ✅ Implementation: See IMPLEMENTATION_CHECKLIST.md
 
 ---
 
-**Last Updated:** November 23, 2025  
+**Last Updated:** January 18, 2026  
 **Status:** ✅ Production Ready  
-**Version:** 1.0.0
+**Version:** 2.0.0 (File Management & Site Config Update)
