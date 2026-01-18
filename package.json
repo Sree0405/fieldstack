@@ -3,13 +3,13 @@
   "private": true,
   "version": "0.0.0",
   "type": "module",
-  "scripts": {
-    "dev": "vite",
-    "build:frontend": "npx vite build",
-    "build:backend": "cd server && npm run build",
-    "build": "npm run build:frontend && npm run build:backend",
-    "preview": "vite preview"
-  },
+"scripts": {
+  "dev": "vite",
+  "build": "npm run build:backend",
+  "build:backend": "cd server && npm run build",
+  "preview": "vite preview"
+}
+,
   "dependencies": {
     "vite": "^5.4.19",
     "@vitejs/plugin-react-swc": "^3.11.0",
